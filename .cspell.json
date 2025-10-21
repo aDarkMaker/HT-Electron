@@ -1,5 +1,20 @@
 {
-  "ignoreWords": ["HXKT", "HXKTerminal", "HXK", "HXKTeam", "HXKTeam"],
-  "ignorePaths": ["node_modules/**", "pnpm-lock.yaml", "pnpm-workspace.yaml"],
-  "version": "0.2"
+    "ignoreWords": [
+        "HXKT",
+        "HXKTerminal",
+        "HXK",
+        "HXKTeam",
+        "HXKTeam",
+        "electron"
+    ],
+    "ignorePaths": [
+        "node_modules/**",
+        "pnpm-lock.yaml",
+        "pnpm-workspace.yaml",
+        "build/**",
+        "coverage/**",
+        ".gitignore"
+    ],
+    "version": "0.2",
+    "words": ["Alimama", "inprogress", "nsis"]
 }
