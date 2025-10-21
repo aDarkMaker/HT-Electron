@@ -1,28 +1,62 @@
 {
-  "name": "HXKT",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "spellcheck": "cspell 'src/**/*.{ts,js,html}' -c .cspell.json",
-    "prepare": "husky install"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.18.1",
-  "devDependencies": {
-    "cspell": "^9.2.1",
-    "electron": "^38.3.0",
-    "eslint": "^9.38.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.2.5",
-    "prettier": "3.6.2"
-  },
-  "lint-staged": {
-    "**/*": "prettier --write --ignore-unknown",
-    "*.js": "eslint --cache --fix",
-    "*.{js,css,md}": "prettier --write"
-  }
+    "name": "HXKT",
+    "version": "1.0.0",
+    "description": "HXK Terminal - 统一管理工作资料与任务的跨平台协作工具",
+    "main": "src/main.js",
+    "type": "module",
+    "scripts": {
+        "start": "electron .",
+        "dev": "electron . --development",
+        "build": "electron-builder",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "spellcheck": "cspell 'src/**/*.{ts,js,html}' -c .cspell.json",
+        "prepare": "husky install"
+    },
+    "keywords": [
+        "electron",
+        "task-management",
+        "collaboration"
+    ],
+    "author": "HXK Team",
+    "license": "MIT",
+    "packageManager": "pnpm@10.18.1",
+    "devDependencies": {
+        "cspell": "^9.2.1",
+        "electron": "^38.3.0",
+        "electron-builder": "^25.1.8",
+        "eslint": "^9.38.0",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.5",
+        "prettier": "3.6.2"
+    },
+    "dependencies": {
+        "electron-store": "^10.0.0",
+        "eslint-plugin-jsdoc": "^61.1.5",
+        "jsdoc": "^4.0.5"
+    },
+    "lint-staged": {
+        "**/*": "prettier --write --ignore-unknown",
+        "*.js": "eslint --cache --fix",
+        "*.{js,css,md}": "prettier --write"
+    },
+    "build": {
+        "appId": "com.hxk.terminal",
+        "productName": "HXK Terminal",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "src/**/*",
+            "assets/**/*"
+        ],
+        "mac": {
+            "category": "public.app-category.productivity"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
+    }
 }
