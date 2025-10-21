@@ -8,7 +8,8 @@ class SettingsManager {
             language: 'zh-CN',
             notifications: true,
             autoSave: true,
-            showCompletedTasks: true
+            showCompletedTasks: true,
+            avatar: null // 存储用户头像的base64数据
         };
 
         this.init();
@@ -62,6 +63,25 @@ class SettingsManager {
         container.innerHTML = `
             <div class="settings-section">
                 <h3>用户设置</h3>
+                <div class="setting-item avatar-setting">
+                    <label>用户头像</label>
+                    <div class="avatar-upload-container">
+                        <div class="avatar-preview-wrapper">
+                            <div class="avatar-preview" id="avatar-preview">
+                                <img src="${this.settings.avatar || 'Assets/Icons/user.svg'}" alt="用户头像" id="avatar-preview-img">
+                            </div>
+                            <div class="avatar-upload-overlay" id="avatar-upload-trigger">
+                                <img src="Assets/Icons/upload.svg" width="24" height="24" alt="上传">
+                                <span>更换头像</span>
+                            </div>
+                        </div>
+                        <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
+                        <div class="avatar-actions">
+                            <button class="setting-btn" id="choose-avatar-btn">选择头像</button>
+                            ${this.settings.avatar ? '<button class="setting-btn danger" id="remove-avatar-btn">移除头像</button>' : ''}
+                        </div>
+                    </div>
+                </div>
                 <div class="setting-item">
                     <label>用户名</label>
                     <input type="text" id="username-input" 
@@ -153,6 +173,40 @@ class SettingsManager {
     }
 
     bindSettingsEvents() {
+        // 头像上传相关
+        const avatarUploadInput = document.getElementById(
+            'avatar-upload-input'
+        );
+        const chooseAvatarBtn = document.getElementById('choose-avatar-btn');
+        const removeAvatarBtn = document.getElementById('remove-avatar-btn');
+        const avatarUploadTrigger = document.getElementById(
+            'avatar-upload-trigger'
+        );
+
+        if (chooseAvatarBtn && avatarUploadInput) {
+            chooseAvatarBtn.addEventListener('click', () => {
+                avatarUploadInput.click();
+            });
+        }
+
+        if (avatarUploadTrigger && avatarUploadInput) {
+            avatarUploadTrigger.addEventListener('click', () => {
+                avatarUploadInput.click();
+            });
+        }
+
+        if (avatarUploadInput) {
+            avatarUploadInput.addEventListener('change', (event) => {
+                this.handleAvatarUpload(event.target.files[0]);
+            });
+        }
+
+        if (removeAvatarBtn) {
+            removeAvatarBtn.addEventListener('click', () => {
+                this.removeAvatar();
+            });
+        }
+
         // 用户名输入
         const usernameInput = document.getElementById('username-input');
         if (usernameInput) {
@@ -256,10 +310,139 @@ class SettingsManager {
     }
 
     updateUserDisplay() {
+        // 更新用户名
         const userNameElement = document.getElementById('user-name');
         if (userNameElement) {
             userNameElement.textContent = this.settings.username;
         }
+
+        // 更新导航栏头像
+        this.updateNavigationAvatar();
+
+        // 如果导航管理器存在，也通知它更新
+        if (this.app && this.app.navigation) {
+            this.app.navigation.updateUserInfo();
+        }
+    }
+
+    updateNavigationAvatar() {
+        const navAvatarImg = document.querySelector('.user-avatar img');
+        if (navAvatarImg) {
+            const avatarSrc = this.settings.avatar || 'Assets/Icons/user.svg';
+            navAvatarImg.src = avatarSrc;
+        }
+    }
+
+    async handleAvatarUpload(file) {
+        if (!file) return;
+
+        // 验证文件类型
+        if (!file.type.startsWith('image/')) {
+            this.app.showNotification('请选择图片文件', 'error');
+            return;
+        }
+
+        // 验证文件大小 (限制为2MB)
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            this.app.showNotification('图片大小不能超过2MB', 'error');
+            return;
+        }
+
+        try {
+            // 读取文件并转换为base64
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64Data = e.target.result;
+
+                // 可选：压缩图片
+                const compressedData = await this.compressImage(base64Data);
+
+                this.settings.avatar = compressedData;
+                await this.saveSettings();
+
+                // 更新预览
+                const previewImg =
+                    document.getElementById('avatar-preview-img');
+                if (previewImg) {
+                    previewImg.src = compressedData;
+                }
+
+                // 更新导航栏头像
+                this.updateNavigationAvatar();
+
+                // 重新渲染设置以显示移除按钮
+                this.renderSettings();
+
+                this.app.showNotification('头像已更新', 'success');
+            };
+
+            reader.onerror = () => {
+                this.app.showNotification('读取图片失败', 'error');
+            };
+
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('上传头像失败:', error);
+            this.app.showNotification('上传头像失败', 'error');
+        }
+    }
+
+    async compressImage(base64Data, maxWidth = 200, maxHeight = 200) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                // 计算缩放比例
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height = height * (maxWidth / width);
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width = width * (maxHeight / height);
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // 转换为base64，使用较低质量以减小文件大小
+                const compressedData = canvas.toDataURL('image/jpeg', 0.8);
+                resolve(compressedData);
+            };
+
+            img.onerror = () => {
+                reject(new Error('图片加载失败'));
+            };
+
+            img.src = base64Data;
+        });
+    }
+
+    async removeAvatar() {
+        if (!confirm('确定要移除头像吗？')) {
+            return;
+        }
+
+        this.settings.avatar = null;
+        await this.saveSettings();
+
+        // 更新导航栏头像
+        this.updateNavigationAvatar();
+
+        // 重新渲染设置
+        this.renderSettings();
+
+        this.app.showNotification('头像已移除', 'success');
     }
 
     applyTheme() {
@@ -419,10 +602,12 @@ class SettingsManager {
             language: 'zh-CN',
             notifications: true,
             autoSave: true,
-            showCompletedTasks: true
+            showCompletedTasks: true,
+            avatar: null
         };
 
         await this.saveSettings();
+        this.updateNavigationAvatar();
         this.renderSettings();
         this.app.showNotification('设置已重置为默认值', 'success');
     }

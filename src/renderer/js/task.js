@@ -593,6 +593,7 @@ class TaskManager {
 
             // 更新界面
             this.renderTasks();
+            this.app.updateTaskCounts(); // 更新任务计数
 
             // 显示成功消息
             this.app.showNotification('任务完成！', 'success');

@@ -120,9 +120,14 @@ class NavigationManager {
     updateUserInfo() {
         const user = this.app.getCurrentUser();
         const userNameElement = document.getElementById('user-name');
+        const userAvatarImg = document.querySelector('.user-avatar img');
 
         if (userNameElement) {
             userNameElement.textContent = user.name;
+        }
+
+        if (userAvatarImg) {
+            userAvatarImg.src = user.avatar;
         }
     }
 

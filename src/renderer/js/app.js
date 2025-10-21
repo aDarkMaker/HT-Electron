@@ -213,6 +213,12 @@ class HXKTerminalApp {
 
         // 初始化导航栏状态
         this.navigation.updateNavigationState();
+
+        // 更新用户显示（包括头像和用户名）
+        this.settingsManager.updateUserDisplay();
+
+        // 确保导航栏也更新用户信息
+        this.navigation.updateUserInfo();
     }
 
     navigateToView(viewName) {
@@ -252,11 +258,28 @@ class HXKTerminalApp {
         // 现在 tasks 数组中的任务都是可用的（个人任务接取后会被移除，团队任务会保留）
         const availableCount = this.tasks.length;
         const myTasksCount = this.myTasks.length;
+        const totalCount = availableCount + myTasksCount;
 
-        document.getElementById('available-count').textContent = availableCount;
-        document.getElementById('my-tasks-count').textContent = myTasksCount;
-        document.getElementById('task-count').textContent =
-            availableCount + myTasksCount;
+        // 更新计数并处理显示/隐藏
+        const availableCountEl = document.getElementById('available-count');
+        const myTasksCountEl = document.getElementById('my-tasks-count');
+        const taskCountEl = document.getElementById('task-count');
+
+        if (availableCountEl) {
+            availableCountEl.textContent = availableCount;
+            availableCountEl.style.display =
+                availableCount > 0 ? 'flex' : 'none';
+        }
+
+        if (myTasksCountEl) {
+            myTasksCountEl.textContent = myTasksCount;
+            myTasksCountEl.style.display = myTasksCount > 0 ? 'flex' : 'none';
+        }
+
+        if (taskCountEl) {
+            taskCountEl.textContent = totalCount;
+            taskCountEl.style.display = totalCount > 0 ? 'flex' : 'none';
+        }
     }
 
     handleKeyboardShortcuts(event) {
@@ -307,9 +330,12 @@ class HXKTerminalApp {
 
     // 获取当前用户信息
     getCurrentUser() {
+        const settings = this.settingsManager
+            ? this.settingsManager.getSettings()
+            : {};
         return {
-            name: '用户',
-            avatar: 'Assets/Icons/user.svg',
+            name: settings.username || '用户',
+            avatar: settings.avatar || 'Assets/Icons/user.svg',
             role: 'member'
         };
     }
