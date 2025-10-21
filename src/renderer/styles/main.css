@@ -3,13 +3,33 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family:
+        'AlimamaShuHeiTi-Bold',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        'PingFang SC',
+        'Hiragino Sans GB',
+        'Microsoft YaHei',
+        'Helvetica Neue',
+        Helvetica,
+        Arial,
+        sans-serif;
 }
 
 body {
     font-family:
-        -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-        'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica,
-        Arial, sans-serif;
+        'AlimamaShuHeiTi-Bold',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        'PingFang SC',
+        'Hiragino Sans GB',
+        'Microsoft YaHei',
+        'Helvetica Neue',
+        Helvetica,
+        Arial,
+        sans-serif;
     background-color: #f5f5f5;
     color: #2d3748;
     overflow: hidden;
@@ -24,14 +44,14 @@ body {
 /* 主内容区域 */
 .main-content {
     flex: 1;
-    margin-left: 90px;
+    margin-left: 220px;
     transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
     overflow-x: hidden;
 }
 
-.main-content.expanded {
-    margin-left: 220px;
+.main-content.collapsed {
+    margin-left: 90px;
 }
 
 /* 视图容器 */
@@ -93,6 +113,10 @@ body {
 }
 
 .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     padding: 8px 16px;
     border: none;
     border-radius: 6px;
@@ -335,22 +359,14 @@ body {
     margin: 0 auto;
 }
 
-/* 滚动条样式 */
-::-webkit-scrollbar {
-    width: 6px;
+/* 隐藏所有滚动条 */
+* {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
 
-::-webkit-scrollbar-track {
-    background: #f7fafc;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
+*::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 /* 响应式设计 */

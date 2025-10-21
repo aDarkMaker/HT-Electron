@@ -4,18 +4,40 @@
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-family:
+        'AlimamaShuHeiTi-Bold',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        'PingFang SC',
+        'Hiragino Sans GB',
+        'Microsoft YaHei',
+        'Helvetica Neue',
+        Helvetica,
+        Arial,
+        sans-serif;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.calendar-content::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 #calendar-container {
     width: 100%;
-    height: 500px;
-    background: #f7fafc;
+    min-height: 500px;
+    background: white;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #718096;
-    font-size: 16px;
+    padding: 20px;
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+#calendar-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 /* 日历组件样式 */
@@ -60,30 +82,38 @@
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #e2e8f0;
+    gap: 0;
+    background: #f8fafc;
     border-radius: 8px;
     overflow: hidden;
+    border: 1px solid #e2e8f0;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .calendar-day-header {
-    background: #f7fafc;
+    background: #f1f5f9;
     padding: 12px 8px;
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: #718096;
+    color: #475569;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .calendar-day {
     background: white;
-    min-height: 80px;
+    min-height: 100px;
     padding: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    border: 1px solid #f1f5f9;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendar-day:hover {
@@ -129,6 +159,9 @@
     white-space: nowrap;
     cursor: pointer;
     transition: all 0.2s ease;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-event:hover {
@@ -140,6 +173,22 @@
     background: #48bb78;
 }
 
+/* 例会状态颜色 */
+.calendar-event.meeting-pending {
+    background: #a0aec0; /* 未明确 - 灰色 */
+    color: #4a5568;
+}
+
+.calendar-event.meeting-confirmed {
+    background: #48bb78; /* 确认前往 - 绿色 */
+    color: white;
+}
+
+.calendar-event.meeting-absent {
+    background: #f56565; /* 请假 - 柔和的红色 */
+    color: white;
+}
+
 .calendar-event.deadline {
     background: #ed8936;
 }
@@ -148,33 +197,470 @@
     background: #4299e1;
 }
 
+/* 任务颜色变体 */
+.calendar-event.task-color-1 {
+    background: #4299e1; /* 蓝色 */
+}
+
+.calendar-event.task-color-2 {
+    background: #48bb78; /* 绿色 */
+}
+
+.calendar-event.task-color-3 {
+    background: #ed8936; /* 橙色 */
+}
+
+.calendar-event.task-color-4 {
+    background: #9f7aea; /* 紫色 */
+}
+
+.calendar-event.task-color-5 {
+    background: #38b2ac; /* 青色 */
+}
+
 /* 事件详情模态框 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.active {
+    display: flex;
+    opacity: 1;
+}
+
 .event-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 1000;
     display: none;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .event-modal.active {
     display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    max-width: 450px;
+    width: 90%;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.modal-content::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.modal.active .modal-content {
+    transform: scale(1) translateY(0);
 }
 
 .event-modal-content {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-    max-width: 400px;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    max-width: 500px;
     width: 90%;
-    max-height: 80vh;
+    max-height: 85vh;
     overflow-y: auto;
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* 隐藏滚动条 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+.event-modal-content::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.event-modal.active .event-modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* 事件详情信息样式 */
+.event-detail-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #4a5568;
+    min-width: 50px;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.detail-item span {
+    color: #2d3748;
+    flex: 1;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-icon {
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+/* 模态框操作按钮样式 */
+.modal-footer {
+    display: flex;
+    gap: 16px;
+    justify-content: flex-end;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #38a169;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-secondary:hover {
+    background: #cbd5e0;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #f56565;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #e53e3e;
+    transform: translateY(-1px);
+}
+
+.modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+.event-modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 16px 16px 0 0;
+}
+
+.event-header-info {
+    flex: 1;
+}
+
+.event-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.025em;
+}
+
+.event-type-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.event-type-badge.meeting {
+    background: #e6fffa;
+    color: #234e52;
+}
+
+.event-type-badge.deadline {
+    background: #fef5e7;
+    color: #744210;
+}
+
+.event-type-badge.task {
+    background: #ebf8ff;
+    color: #2a4365;
+}
+
+.event-type-badge.event {
+    background: #f3e8ff;
+    color: #553c9a;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #a0aec0;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.close-btn:hover {
+    background: #f7fafc;
+    color: #4a5568;
+    transform: scale(1.1);
+}
+
+.close-btn:active {
+    transform: scale(0.95);
+}
+
+/* 添加事件模态框特殊样式 */
+.add-event-modal {
+    max-width: 600px;
+    width: 95%;
+}
+
+.add-event-modal .modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.add-event-modal .modal-header h3 {
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.add-event-modal .modal-header p {
+    color: rgba(255, 255, 255, 0.8);
+    margin: 4px 0 0 0;
+    font-size: 14px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+}
+
+.header-text {
+    flex: 1;
+}
+
+.add-event-modal .close-btn {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.add-event-modal .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* 表单样式 */
+.form-section {
+    margin-bottom: 32px;
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 20px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #4a5568;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #a0aec0;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.duration-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.duration-input input {
+    padding-right: 60px;
+}
+
+.duration-unit {
+    position: absolute;
+    right: 16px;
+    color: #718096;
+    font-size: 14px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+/* 响应式表单 */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .add-event-modal {
+        max-width: none;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    .add-event-modal .modal-header {
+        border-radius: 0;
+    }
 }
 
 .event-modal-header {
@@ -192,19 +678,41 @@
 }
 
 .event-modal-body {
-    padding: 24px;
+    padding: 28px;
 }
 
 .event-details {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .event-detail-item {
     display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.event-detail-item:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e0;
+}
+
+.detail-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background: white;
+    border-radius: 10px;
+    display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .event-detail-icon {
@@ -221,13 +729,92 @@
 .event-detail-label {
     font-size: 12px;
     color: #718096;
-    margin-bottom: 2px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .event-detail-value {
-    font-size: 14px;
+    font-size: 15px;
     color: #2d3748;
     font-weight: 500;
+    line-height: 1.4;
+}
+
+.status-item .event-detail-value {
+    font-weight: 600;
+}
+
+.status-value.status-pending {
+    color: #d69e2e;
+}
+
+.status-value.status-confirmed {
+    color: #38a169;
+}
+
+.status-value.status-absent {
+    color: #e53e3e;
+}
+
+/* 事件操作按钮 */
+.event-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.attendance-options {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.attendance-modal .modal-content {
+    max-width: 400px;
+}
+
+.attendance-info {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.attendance-info h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+}
+
+.attendance-info p {
+    color: #718096;
+    margin: 0;
+    font-size: 14px;
+}
+
+.attendance-option {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    padding: 12px 16px;
+    font-weight: 600;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #4a5568;
+    border: 2px solid #e2e8f0;
+}
+
+.btn-outline:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+    color: #2d3748;
 }
 
 /* 响应式设计 */
@@ -256,5 +843,59 @@
 
     .calendar-title {
         font-size: 16px;
+    }
+
+    .modal-content,
+    .event-modal-content {
+        width: 95%;
+        max-width: none;
+        margin: 20px;
+    }
+
+    .event-modal-header {
+        padding: 20px;
+    }
+
+    .event-modal-body {
+        padding: 20px;
+    }
+
+    .event-actions {
+        flex-direction: column;
+    }
+
+    .attendance-options {
+        flex-direction: column;
+    }
+
+    .attendance-option {
+        min-width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content,
+    .event-modal-content {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .event-modal-header {
+        padding: 16px;
+    }
+
+    .event-modal-body {
+        padding: 16px;
+    }
+
+    .event-detail-item {
+        padding: 12px;
+    }
+
+    .detail-icon-wrapper {
+        width: 32px;
+        height: 32px;
     }
 }

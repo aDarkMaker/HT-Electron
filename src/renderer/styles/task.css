@@ -1,12 +1,25 @@
 /* 任务视图样式 */
 .task-tabs {
     background: white;
-    border-radius: 12px;
-    padding: 6px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 8px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     gap: 0;
+    border: 1px solid #f1f5f9;
+    font-family:
+        'AlimamaShuHeiTi-Bold',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        'PingFang SC',
+        'Hiragino Sans GB',
+        'Microsoft YaHei',
+        'Helvetica Neue',
+        Helvetica,
+        Arial,
+        sans-serif;
 }
 
 .tab-btn {
@@ -14,28 +27,30 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 16px;
+    gap: 10px;
+    padding: 14px 20px;
     background: transparent;
     border: none;
-    border-radius: 8px;
-    color: #718096;
-    font-size: 14px;
-    font-weight: 500;
+    border-radius: 12px;
+    color: #64748b;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
 }
 
 .tab-btn:hover {
-    background: #f7fafc;
-    color: #4a5568;
+    background: #f1f5f9;
+    color: #334155;
+    transform: translateY(-1px);
 }
 
 .tab-btn.active {
-    background: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
 }
 
 .tab-btn svg {
@@ -64,38 +79,45 @@
 /* 任务内容区域 */
 .task-content {
     position: relative;
+    min-height: 200px; /* 确保容器有最小高度 */
 }
 
 .task-list {
     display: none;
+    min-height: 200px; /* 确保任务列表有最小高度 */
 }
 
 .task-list.active {
     display: block;
+    min-height: 200px; /* 确保激活的任务列表有最小高度 */
 }
 
 /* 任务卡片 */
 .task-card {
     background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-left: 4px solid transparent;
+    position: relative;
+    overflow: hidden;
 }
 
 .task-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .task-card.my-task-card {
     border-left-color: #4299e1;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
 }
 
 .task-card.my-task-card.completed {
     border-left-color: #48bb78;
+    background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
 }
 
 /* 任务头部 */
@@ -104,6 +126,7 @@
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 12px;
+    gap: 16px;
 }
 
 .task-title-section {
@@ -111,11 +134,11 @@
 }
 
 .task-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 6px;
-    line-height: 1.4;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 8px;
+    line-height: 1.3;
 }
 
 .task-meta {
@@ -123,10 +146,12 @@
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    margin-bottom: 4px;
 }
 
 .task-publisher {
     text-align: right;
+    flex-shrink: 0;
 }
 
 .publisher-name {
@@ -142,11 +167,11 @@
 
 /* 任务描述 */
 .task-description {
-    font-size: 14px;
+    font-size: 15px;
     color: #4a5568;
-    line-height: 1.5;
-    margin-bottom: 12px;
-    max-height: 60px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-height: 72px;
     overflow: hidden;
     display: -webkit-box;
     line-clamp: 3;
@@ -158,9 +183,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
 }
 
 .task-tags {
@@ -188,6 +213,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 16px;
+}
+
+.task-footer-left {
+    flex: 1;
 }
 
 .task-team-info {
@@ -197,6 +227,8 @@
     color: #2d3748;
     font-size: 14px;
     font-weight: 500;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .task-team-info svg {
@@ -208,10 +240,34 @@
 .task-actions {
     display: flex;
     gap: 10px;
+    flex-shrink: 0;
+    align-items: center;
+    height: 100%;
 }
 
 /* 操作按钮 */
 .accept-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
+}
+
+.accept-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
+}
+
+.complete-btn {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -219,57 +275,39 @@
     background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
     color: white;
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
-}
-
-.accept-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
-}
-
-.complete-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-    color: white;
-    border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
 }
 
 .complete-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
 }
 
 .abandon-btn {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 8px 16px;
     background: #fed7d7;
     color: #c53030;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(197, 48, 48, 0.2);
 }
 
 .abandon-btn:hover {
     background: #feb2b2;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
 }
 
 .accepted-badge {
@@ -283,6 +321,8 @@
     border-radius: 6px;
     font-size: 14px;
     font-weight: 500;
+    height: 40px;
+    box-sizing: border-box;
 }
 
 .accepted-badge svg {
@@ -329,6 +369,11 @@
     text-align: center;
     padding: 60px 20px;
     color: #a0aec0;
+    min-height: 200px; /* 确保空状态也有最小高度 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .empty-state svg {
