@@ -4,13 +4,33 @@ class TaskManager {
         this.app = app;
         this.selectedTab = 'available';
         this.currentTasks = [];
+        this.processingTasks = new Set(); // 防止重复操作
 
         this.init();
     }
 
     init() {
+        console.log('TaskManager 初始化');
         this.bindEvents();
-        this.renderTasks();
+        console.log('开始渲染任务，当前标签页:', this.selectedTab);
+
+        // 确保DOM元素存在后再设置标签页状态
+        const availableContainer = document.getElementById('available-tasks');
+        const myTasksContainer = document.getElementById('my-tasks');
+
+        if (availableContainer && myTasksContainer) {
+            console.log('DOM元素已准备好，设置初始标签页状态');
+            this.switchTab(this.selectedTab);
+        } else {
+            console.error('DOM元素未准备好:', {
+                availableContainer: !!availableContainer,
+                myTasksContainer: !!myTasksContainer
+            });
+            // 如果DOM还没准备好，延迟执行
+            setTimeout(() => {
+                this.switchTab(this.selectedTab);
+            }, 200);
+        }
     }
 
     bindEvents() {
@@ -34,10 +54,11 @@ class TaskManager {
         this.bindModalEvents();
 
         // 菜单事件
-        const { ipcRenderer } = require('electron');
-        ipcRenderer.on('menu-new-task', () => {
-            this.showPublishModal();
-        });
+        if (window.electronAPI) {
+            window.electronAPI.onMenuNewTask(() => {
+                this.showPublishModal();
+            });
+        }
     }
 
     bindModalEvents() {
@@ -93,9 +114,14 @@ class TaskManager {
             list.classList.remove('active');
         });
 
-        const activeList = document.getElementById(`${tabName}-tasks`);
+        // 给当前选中的标签页添加active类
+        const elementId = tabName === 'available' ? 'available-tasks' : tabName;
+        const activeList = document.getElementById(elementId);
         if (activeList) {
             activeList.classList.add('active');
+            console.log(`已为 ${elementId} 添加 active 类`);
+        } else {
+            console.error(`找不到元素: ${elementId}`);
         }
 
         // 重新渲染任务
@@ -103,16 +129,22 @@ class TaskManager {
     }
 
     renderTasks() {
-        if (this.selectedTab === 'available') {
-            this.renderAvailableTasks();
-        } else if (this.selectedTab === 'my-tasks') {
-            this.renderMyTasks();
-        }
+        console.log('renderTasks 被调用，当前标签页:', this.selectedTab);
+        // 始终渲染两个标签页的内容，确保切换时不会丢失数据
+        console.log('渲染可用任务');
+        this.renderAvailableTasks();
+        console.log('渲染我的任务');
+        this.renderMyTasks();
     }
 
     renderAvailableTasks() {
         const container = document.getElementById('available-tasks');
-        if (!container) return;
+        if (!container) {
+            console.error('找不到 available-tasks 容器');
+            return;
+        }
+
+        console.log('渲染可用任务，容器类名:', container.className);
 
         const availableTasks = this.app.tasks.filter(
             (task) => !task.isAccepted
@@ -133,21 +165,50 @@ class TaskManager {
 
     renderMyTasks() {
         const container = document.getElementById('my-tasks');
-        if (!container) return;
+        if (!container) {
+            console.error('找不到 my-tasks 容器');
+            return;
+        }
+
+        console.log('=== 渲染我的任务 ===');
+        console.log('容器:', container);
+        console.log('我的任务数量:', this.app.myTasks.length);
+        console.log('我的任务列表:', this.app.myTasks);
 
         if (this.app.myTasks.length === 0) {
+            console.log('显示空状态');
             container.innerHTML = this.createEmptyState('暂无我的任务', 'flag');
             return;
         }
 
-        container.innerHTML = this.app.myTasks
+        console.log('开始渲染任务卡片');
+        const taskCards = this.app.myTasks
             .map((task) => this.createTaskCard(task, 'my-tasks'))
             .join('');
+
+        console.log('生成的HTML:', taskCards);
+        container.innerHTML = taskCards;
+        console.log('容器内容已更新');
+
+        // 测试：检查容器是否真的有内容
+        setTimeout(() => {
+            console.log('容器实际内容:', container.innerHTML);
+            console.log('容器子元素数量:', container.children.length);
+        }, 100);
     }
 
     createTaskCard(task, type) {
         const isMyTask = type === 'my-tasks';
         const isCompleted = task.status === 'completed';
+
+        console.log('创建任务卡片:', {
+            taskId: task.id,
+            taskTitle: task.title,
+            type: type,
+            isMyTask: isMyTask,
+            isCompleted: isCompleted,
+            task: task
+        });
 
         return `
             <div class="task-card ${isMyTask ? 'my-task-card' : ''} ${isCompleted ? 'completed' : ''}">
@@ -177,7 +238,9 @@ class TaskManager {
                 </div>
                 
                 <div class="task-footer">
-                    ${isMyTask ? this.createMyTaskInfo(task) : this.createTeamInfo(task)}
+                    <div class="task-footer-left">
+                        ${isMyTask ? this.createMyTaskInfo(task) : this.createTeamInfo(task)}
+                    </div>
                     <div class="task-actions">
                         ${this.createActionButtons(task, type)}
                     </div>
@@ -216,9 +279,7 @@ class TaskManager {
     createPriorityBadge() {
         return `
             <span class="tag priority-badge">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
+                <img src="Assets/Icons/star.svg" width="12" height="12" alt="高优先级" />
                 高优先级
             </span>
         `;
@@ -227,9 +288,7 @@ class TaskManager {
     createTag(tag) {
         return `
             <span class="tag">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.91 3 7.01v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/>
-                </svg>
+                <img src="Assets/Icons/tag.svg" width="11" height="11" alt="标签" />
                 ${this.escapeHtml(tag)}
             </span>
         `;
@@ -238,9 +297,7 @@ class TaskManager {
     createDeadline(deadline) {
         return `
             <div class="task-deadline">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7-.8 1.3z"/>
-                </svg>
+                <img src="Assets/Icons/hourglass.svg" width="16" height="16" alt="截止时间" />
                 截止: ${this.formatDateTime(deadline)}
             </div>
         `;
@@ -250,9 +307,7 @@ class TaskManager {
         if (task.type === 'team') {
             return `
                 <div class="task-team-info">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01.99L14 10.5 12.01 8.99A2.5 2.5 0 0 0 10 8H8.46c-.8 0-1.54.37-2.01.99L4 10.5V22h2v-6h2.5l2.5 6h2l-2.5-6H14v6h2z"/>
-                    </svg>
+                    <img src="Assets/Icons/team.svg" width="18" height="18" alt="团队" />
                     <span>${task.acceptedCount}/${task.maxAcceptCount || '∞'} 人已接取</span>
                 </div>
             `;
@@ -261,33 +316,28 @@ class TaskManager {
     }
 
     createMyTaskInfo(task) {
-        return `
-            <div class="task-team-info">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
-                <span>我的任务</span>
-            </div>
-        `;
+        // 我的任务不需要显示额外的信息
+        return '';
     }
 
     createActionButtons(task, type) {
         if (type === 'available') {
-            if (task.isAccepted) {
+            // 检查用户是否已经接取过这个任务
+            const alreadyAccepted = this.app.myTasks.some(
+                (myTask) => myTask.id === task.id
+            );
+
+            if (alreadyAccepted) {
                 return `
                     <div class="accepted-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
+                        <img src="Assets/Icons/check.svg" width="16" height="16" alt="已接取" />
                         已接取
                     </div>
                 `;
             } else {
                 return `
                     <button class="accept-btn" onclick="window.app.taskManager.acceptTask('${task.id}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
+                        <img src="Assets/Icons/check.svg" width="16" height="16" alt="接取任务" />
                         接取任务
                     </button>
                 `;
@@ -296,24 +346,18 @@ class TaskManager {
             if (task.status === 'completed') {
                 return `
                     <div class="accepted-badge">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
+                        <img src="Assets/Icons/check.svg" width="16" height="16" alt="已完成" />
                         已完成
                     </div>
                 `;
             } else {
                 return `
                     <button class="complete-btn" onclick="window.app.taskManager.completeTask('${task.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                        </svg>
+                        <img src="Assets/Icons/check.svg" width="14" height="14" alt="完成" />
                         完成
                     </button>
                     <button class="abandon-btn" onclick="window.app.taskManager.abandonTask('${task.id}')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                        </svg>
+                        <img src="Assets/Icons/delete.svg" width="14" height="14" alt="放弃" />
                         放弃
                     </button>
                 `;
@@ -325,9 +369,6 @@ class TaskManager {
     createEmptyState(message, icon) {
         return `
             <div class="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                </svg>
                 <h3>${message}</h3>
                 <p>点击"发布任务"按钮创建新任务</p>
             </div>
@@ -421,15 +462,27 @@ class TaskManager {
     }
 
     async acceptTask(taskId) {
+        // 防止重复操作
+        if (this.processingTasks.has(taskId)) {
+            console.log('任务正在处理中，跳过重复操作:', taskId);
+            return;
+        }
+
         try {
+            this.processingTasks.add(taskId);
+
             const task = this.app.tasks.find((t) => t.id === taskId);
             if (!task) {
                 this.app.showNotification('任务不存在', 'error');
                 return;
             }
 
-            if (task.isAccepted) {
-                this.app.showNotification('任务已被接取', 'warning');
+            // 检查用户是否已经接取过这个任务
+            const alreadyAccepted = this.app.myTasks.some(
+                (myTask) => myTask.id === taskId
+            );
+            if (alreadyAccepted) {
+                this.app.showNotification('您已接取该任务', 'warning');
                 return;
             }
 
@@ -442,37 +495,67 @@ class TaskManager {
                 return;
             }
 
-            // 更新任务状态
-            task.isAccepted = true;
-            task.acceptedCount++;
+            // 先创建我的任务对象（在修改原任务之前）
+            const myTask = {
+                ...task,
+                status: 'inProgress',
+                acceptedAt: new Date(),
+                originalType: task.type // 保存原始类型
+            };
 
-            // 添加到我的任务
-            const myTask = { ...task, status: 'inProgress' };
             this.app.myTasks.push(myTask);
+
+            // 更新任务状态
+            if (task.type === 'team') {
+                // 团队任务：增加接取人数
+                task.acceptedCount++;
+            } else {
+                // 个人任务：从可用任务列表中移除
+                const taskIndex = this.app.tasks.findIndex(
+                    (t) => t.id === taskId
+                );
+                if (taskIndex !== -1) {
+                    this.app.tasks.splice(taskIndex, 1);
+                }
+            }
 
             // 保存数据
             await this.app.saveData();
+
+            // 显示成功消息
+            this.app.showNotification('任务接取成功！', 'success');
 
             // 更新界面
             this.renderTasks();
             this.app.updateTaskCounts();
 
-            // 显示成功消息
-            this.app.showNotification('任务接取成功！', 'success');
+            // 自动切换到我的任务标签页
+            this.switchTab('my-tasks');
 
-            // 触发事件
+            // 触发事件（用于其他模块监听，但不重复执行操作）
             const event = new CustomEvent('task-accepted', {
-                detail: { taskId }
+                detail: { taskId, task: myTask }
             });
             document.dispatchEvent(event);
         } catch (error) {
             console.error('接取任务失败:', error);
             this.app.showNotification('接取任务失败，请重试', 'error');
+        } finally {
+            // 无论成功还是失败，都要从处理集合中移除
+            this.processingTasks.delete(taskId);
         }
     }
 
     async completeTask(taskId) {
+        // 防止重复操作
+        if (this.processingTasks.has(`complete_${taskId}`)) {
+            console.log('任务完成操作正在处理中，跳过重复操作:', taskId);
+            return;
+        }
+
         try {
+            this.processingTasks.add(`complete_${taskId}`);
+
             const task = this.app.myTasks.find((t) => t.id === taskId);
             if (!task) {
                 this.app.showNotification('任务不存在', 'error');
@@ -484,13 +567,25 @@ class TaskManager {
                 return;
             }
 
-            // 更新任务状态
-            task.status = 'completed';
+            // 已完成的任务直接从我的任务中删除
+            const taskIndex = this.app.myTasks.findIndex(
+                (t) => t.id === taskId
+            );
+            if (taskIndex !== -1) {
+                this.app.myTasks.splice(taskIndex, 1);
+            }
 
-            // 同步更新主任务列表
-            const mainTask = this.app.tasks.find((t) => t.id === taskId);
-            if (mainTask) {
-                mainTask.status = 'completed';
+            // 同步更新主任务列表（仅对团队任务有效）
+            if (task.originalType === 'team') {
+                const mainTask = this.app.tasks.find((t) => t.id === taskId);
+                if (mainTask) {
+                    mainTask.status = 'completed';
+                    // 减少接取人数
+                    mainTask.acceptedCount = Math.max(
+                        0,
+                        mainTask.acceptedCount - 1
+                    );
+                }
             }
 
             // 保存数据
@@ -510,6 +605,9 @@ class TaskManager {
         } catch (error) {
             console.error('完成任务失败:', error);
             this.app.showNotification('完成任务失败，请重试', 'error');
+        } finally {
+            // 无论成功还是失败，都要从处理集合中移除
+            this.processingTasks.delete(`complete_${taskId}`);
         }
     }
 
@@ -518,7 +616,15 @@ class TaskManager {
             return;
         }
 
+        // 防止重复操作
+        if (this.processingTasks.has(`abandon_${taskId}`)) {
+            console.log('任务放弃操作正在处理中，跳过重复操作:', taskId);
+            return;
+        }
+
         try {
+            this.processingTasks.add(`abandon_${taskId}`);
+
             const taskIndex = this.app.myTasks.findIndex(
                 (t) => t.id === taskId
             );
@@ -527,17 +633,32 @@ class TaskManager {
                 return;
             }
 
+            const myTask = this.app.myTasks[taskIndex];
+
             // 从我的任务中移除
             this.app.myTasks.splice(taskIndex, 1);
 
-            // 更新主任务列表
-            const mainTask = this.app.tasks.find((t) => t.id === taskId);
-            if (mainTask) {
-                mainTask.isAccepted = false;
-                mainTask.acceptedCount = Math.max(
-                    0,
-                    mainTask.acceptedCount - 1
-                );
+            // 根据任务类型处理主任务列表
+            if (myTask.originalType === 'team') {
+                // 团队任务：减少接取人数，不会退回
+                const mainTask = this.app.tasks.find((t) => t.id === taskId);
+                if (mainTask) {
+                    mainTask.acceptedCount = Math.max(
+                        0,
+                        mainTask.acceptedCount - 1
+                    );
+                }
+            } else {
+                // 个人任务：重新添加到可用任务列表
+                const restoredTask = {
+                    ...myTask,
+                    isAccepted: false,
+                    acceptedCount: 0,
+                    status: 'available'
+                };
+                delete restoredTask.acceptedAt;
+                delete restoredTask.originalType;
+                this.app.tasks.push(restoredTask);
             }
 
             // 保存数据
@@ -558,6 +679,9 @@ class TaskManager {
         } catch (error) {
             console.error('放弃任务失败:', error);
             this.app.showNotification('放弃任务失败，请重试', 'error');
+        } finally {
+            // 无论成功还是失败，都要从处理集合中移除
+            this.processingTasks.delete(`abandon_${taskId}`);
         }
     }
 
@@ -584,3 +708,6 @@ class TaskManager {
         return div.innerHTML;
     }
 }
+
+// 导出类供其他模块使用
+export { TaskManager };

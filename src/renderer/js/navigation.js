@@ -79,13 +79,17 @@ class NavigationManager {
             navBar.classList.add('expanded');
             expandedNav.classList.remove('collapsed');
             collapsedNav.classList.remove('visible');
-            mainContent.classList.remove('expanded');
+            mainContent.classList.remove('collapsed');
         } else {
             navBar.classList.remove('expanded');
             navBar.classList.add('collapsed');
             expandedNav.classList.add('collapsed');
-            collapsedNav.classList.add('visible');
-            mainContent.classList.add('expanded');
+            mainContent.classList.add('collapsed');
+
+            // 延迟显示小图标，确保导航栏完全收起后再显示
+            setTimeout(() => {
+                collapsedNav.classList.add('visible');
+            }, 200);
         }
     }
 
@@ -214,3 +218,6 @@ class NavigationManager {
         }
     }
 }
+
+// 导出类供其他模块使用
+export { NavigationManager };

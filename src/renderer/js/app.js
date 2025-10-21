@@ -1,3 +1,9 @@
+// 导入其他模块
+import { NavigationManager } from './navigation.js';
+import { TaskManager } from './task.js';
+import { CalendarManager } from './calendar.js';
+import { SettingsManager } from './settings.js';
+
 // 主应用类
 class HXKTerminalApp {
     constructor() {
@@ -13,19 +19,15 @@ class HXKTerminalApp {
     async init() {
         console.log('🚀 HXK Terminal 应用启动中...');
 
-        // 初始化各个模块
+        await this.loadData();
+
         this.navigation = new NavigationManager(this);
         this.taskManager = new TaskManager(this);
         this.calendarManager = new CalendarManager(this);
         this.settingsManager = new SettingsManager(this);
 
-        // 绑定事件
         this.bindEvents();
 
-        // 加载数据
-        await this.loadData();
-
-        // 初始化界面
         this.initializeUI();
 
         console.log('✅ HXK Terminal 应用初始化完成');
@@ -42,17 +44,19 @@ class HXKTerminalApp {
             this.taskManager.addTask(event.detail.task);
         });
 
-        document.addEventListener('task-accepted', (event) => {
-            this.taskManager.acceptTask(event.detail.taskId);
-        });
+        // 移除重复的事件监听器，避免重复接取任务
+        // document.addEventListener('task-accepted', (event) => {
+        //     this.taskManager.acceptTask(event.detail.taskId);
+        // });
 
-        document.addEventListener('task-completed', (event) => {
-            this.taskManager.completeTask(event.detail.taskId);
-        });
+        // 移除重复的事件监听器，避免重复操作
+        // document.addEventListener('task-completed', (event) => {
+        //     this.taskManager.completeTask(event.detail.taskId);
+        // });
 
-        document.addEventListener('task-abandoned', (event) => {
-            this.taskManager.abandonTask(event.detail.taskId);
-        });
+        // document.addEventListener('task-abandoned', (event) => {
+        //     this.taskManager.abandonTask(event.detail.taskId);
+        // });
 
         // 设置事件
         document.addEventListener('settings-changed', (event) => {
@@ -68,17 +72,13 @@ class HXKTerminalApp {
     async loadData() {
         try {
             // 从 Electron Store 加载数据
-            const { ipcRenderer } = require('electron');
-
             this.tasks =
-                (await ipcRenderer.invoke('get-store-value', 'tasks')) || [];
+                (await window.electronAPI.getStoreValue('tasks')) || [];
             this.myTasks =
-                (await ipcRenderer.invoke('get-store-value', 'myTasks')) || [];
+                (await window.electronAPI.getStoreValue('myTasks')) || [];
             this.calendarEvents =
-                (await ipcRenderer.invoke(
-                    'get-store-value',
-                    'calendarEvents'
-                )) || [];
+                (await window.electronAPI.getStoreValue('calendarEvents')) ||
+                [];
 
             // 加载示例数据（如果没有数据）
             if (this.tasks.length === 0) {
@@ -90,6 +90,7 @@ class HXKTerminalApp {
                 myTasks: this.myTasks.length,
                 calendarEvents: this.calendarEvents.length
             });
+            console.log('我的任务详情:', this.myTasks);
         } catch (error) {
             console.error('❌ 数据加载失败:', error);
             this.loadSampleData();
@@ -146,7 +147,9 @@ class HXKTerminalApp {
                 deadline: new Date('2024-01-25T18:00:00'),
                 tags: ['数据库', '优化', '性能'],
                 isAccepted: true,
-                status: 'inProgress'
+                status: 'inProgress',
+                acceptedAt: new Date('2024-01-10T09:00:00'),
+                originalType: 'personal'
             }
         ];
 
@@ -168,6 +171,37 @@ class HXKTerminalApp {
                 description: '前端界面设计项目截止'
             }
         ];
+
+        // 添加双周周四例会
+        this.addBiweeklyMeetings();
+    }
+
+    addBiweeklyMeetings() {
+        // 从2025年10月23日开始（周四）- 最近一次例会
+        const startDate = new Date(2025, 9, 23); // 2025年10月23日
+
+        // 生成接下来一年的双周例会
+        for (let i = 0; i < 26; i++) {
+            // 一年大约26个双周
+            const meetingDate = new Date(startDate);
+            meetingDate.setDate(startDate.getDate() + i * 14); // 每两周一次
+
+            // 设置时间为下午4点到5点
+            meetingDate.setHours(16, 0, 0, 0);
+
+            const meeting = {
+                id: `meeting_${i + 1}`,
+                title: '双周例会',
+                type: 'meeting',
+                date: meetingDate,
+                duration: 60,
+                description: '双周例会，讨论项目进展和团队协作',
+                isRecurring: true,
+                attendance: 'pending'
+            };
+
+            this.calendarEvents.push(meeting);
+        }
     }
 
     initializeUI() {
@@ -202,6 +236,7 @@ class HXKTerminalApp {
         // 根据视图执行特定逻辑
         switch (viewName) {
             case 'tasks':
+                console.log('切换到任务视图，开始渲染任务');
                 this.taskManager.renderTasks();
                 break;
             case 'calendar':
@@ -214,9 +249,8 @@ class HXKTerminalApp {
     }
 
     updateTaskCounts() {
-        const availableCount = this.tasks.filter(
-            (task) => !task.isAccepted
-        ).length;
+        // 现在 tasks 数组中的任务都是可用的（个人任务接取后会被移除，团队任务会保留）
+        const availableCount = this.tasks.length;
         const myTasksCount = this.myTasks.length;
 
         document.getElementById('available-count').textContent = availableCount;
@@ -258,16 +292,9 @@ class HXKTerminalApp {
 
     async saveData() {
         try {
-            const { ipcRenderer } = require('electron');
-
-            await ipcRenderer.invoke('set-store-value', 'tasks', this.tasks);
-            await ipcRenderer.invoke(
-                'set-store-value',
-                'myTasks',
-                this.myTasks
-            );
-            await ipcRenderer.invoke(
-                'set-store-value',
+            await window.electronAPI.setStoreValue('tasks', this.tasks);
+            await window.electronAPI.setStoreValue('myTasks', this.myTasks);
+            await window.electronAPI.setStoreValue(
                 'calendarEvents',
                 this.calendarEvents
             );
@@ -282,7 +309,7 @@ class HXKTerminalApp {
     getCurrentUser() {
         return {
             name: '用户',
-            avatar: '/assets/icons/user.svg',
+            avatar: 'Assets/Icons/user.svg',
             role: 'member'
         };
     }
@@ -343,3 +370,6 @@ class HXKTerminalApp {
 document.addEventListener('DOMContentLoaded', () => {
     window.app = new HXKTerminalApp();
 });
+
+// 导出类供其他模块使用
+export { HXKTerminalApp };
