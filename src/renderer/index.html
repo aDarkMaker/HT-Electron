@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HXK Terminal</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <link rel="stylesheet" href="styles/navigation.css" />
+    <link rel="stylesheet" href="styles/task.css" />
+    <link rel="stylesheet" href="styles/calendar.css" />
+    <link rel="stylesheet" href="styles/settings.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 导航栏 -->
+      <nav id="navigation-bar" class="navigation-bar">
+        <!-- 展开状态 -->
+        <div id="expanded-nav" class="expanded-nav">
+          <div class="nav-header">
+            <button id="collapse-btn" class="icon-btn" title="收起菜单">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                />
+              </svg>
+            </button>
+
+            <div class="user-info">
+              <div class="user-avatar">
+                <svg
+                  width="42"
+                  height="42"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                  />
+                </svg>
+              </div>
+              <div class="user-name" id="user-name">用户</div>
+            </div>
+          </div>
+
+          <div class="nav-menu">
+            <button class="nav-item" data-view="home">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+              </svg>
+              <span>首页</span>
+            </button>
+
+            <button class="nav-item" data-view="tasks">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
+                />
+              </svg>
+              <span>任务</span>
+              <span class="count-badge" id="task-count">0</span>
+            </button>
+
+            <button class="nav-item" data-view="calendar">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
+                />
+              </svg>
+              <span>日历</span>
+            </button>
+
+            <button class="nav-item" data-view="files">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"
+                />
+              </svg>
+              <span>文件</span>
+            </button>
+
+            <button class="nav-item" data-view="publish">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+              </svg>
+              <span>发布</span>
+            </button>
+          </div>
+
+          <div class="nav-footer">
+            <div class="nav-divider"></div>
+
+            <button class="nav-item-bottom" data-view="settings">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                />
+              </svg>
+              <span>设置</span>
+            </button>
+
+            <button class="nav-item-bottom" id="logout-btn">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+                />
+              </svg>
+              <span>登出</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 折叠状态 -->
+        <div id="collapsed-nav" class="collapsed-nav">
+          <button id="expand-btn" class="expand-btn" title="展开菜单">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            </svg>
+          </button>
+        </div>
+      </nav>
+
+      <!-- 主内容区域 -->
+      <main id="main-content" class="main-content">
+        <!-- 首页 -->
+        <div id="home-view" class="view active">
+          <div class="welcome-section">
+            <h1>欢迎使用 HXK Terminal</h1>
+            <p>统一管理工作资料与任务的跨平台协作工具</p>
+          </div>
+        </div>
+
+        <!-- 任务视图 -->
+        <div id="tasks-view" class="view">
+          <div class="view-header">
+            <div class="view-title">
+              <h2>任务中心</h2>
+              <p>小科提醒你该工作了！！！</p>
+            </div>
+            <button id="publish-task-btn" class="primary-btn">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+              <span>发布任务</span>
+            </button>
+          </div>
+
+          <div class="task-tabs">
+            <button class="tab-btn active" data-tab="available">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+                />
+              </svg>
+              <span>待接取</span>
+              <span class="count-badge" id="available-count">0</span>
+            </button>
+            <button class="tab-btn" data-tab="my-tasks">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                />
+              </svg>
+              <span>我的任务</span>
+              <span class="count-badge count-badge-danger" id="my-tasks-count"
+                >0</span
+              >
+            </button>
+          </div>
+
+          <div class="task-content">
+            <div id="available-tasks" class="task-list active">
+              <!-- 待接取任务列表 -->
+            </div>
+            <div id="my-tasks" class="task-list">
+              <!-- 我的任务列表 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 日历视图 -->
+        <div id="calendar-view" class="view">
+          <div class="view-header">
+            <h2>日历</h2>
+          </div>
+          <div class="calendar-content">
+            <div id="calendar-container"></div>
+          </div>
+        </div>
+
+        <!-- 文件视图 -->
+        <div id="files-view" class="view">
+          <div class="view-header">
+            <h2>文件管理</h2>
+          </div>
+          <div class="files-content">
+            <p>文件管理功能开发中...</p>
+          </div>
+        </div>
+
+        <!-- 发布视图 -->
+        <div id="publish-view" class="view">
+          <div class="view-header">
+            <h2>内容发布</h2>
+          </div>
+          <div class="publish-content">
+            <p>内容发布功能开发中...</p>
+          </div>
+        </div>
+
+        <!-- 设置视图 -->
+        <div id="settings-view" class="view">
+          <div class="view-header">
+            <h2>设置</h2>
+          </div>
+          <div class="settings-content">
+            <div class="settings-section">
+              <h3>用户设置</h3>
+              <div class="setting-item">
+                <label>用户名</label>
+                <input
+                  type="text"
+                  id="username-input"
+                  placeholder="请输入用户名"
+                />
+              </div>
+              <div class="setting-item">
+                <label>主题</label>
+                <select id="theme-select">
+                  <option value="light">浅色主题</option>
+                  <option value="dark">深色主题</option>
+                  <option value="auto">跟随系统</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- 发布任务模态框 -->
+    <div id="publish-task-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>发布任务</h3>
+          <button class="close-btn" id="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="publish-task-form">
+            <div class="form-group">
+              <label for="task-title">任务标题</label>
+              <input type="text" id="task-title" required />
+            </div>
+            <div class="form-group">
+              <label for="task-description">任务描述</label>
+              <textarea id="task-description" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="task-type">任务类型</label>
+              <select id="task-type" required>
+                <option value="personal">个人任务</option>
+                <option value="team">团体任务</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-priority">优先级</label>
+              <select id="task-priority">
+                <option value="1">低</option>
+                <option value="2">中</option>
+                <option value="3">高</option>
+                <option value="4">紧急</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-deadline">截止时间</label>
+              <input type="datetime-local" id="task-deadline" />
+            </div>
+            <div class="form-group">
+              <label for="task-tags">标签（用逗号分隔）</label>
+              <input
+                type="text"
+                id="task-tags"
+                placeholder="例如：前端,紧急,设计"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="cancel-publish">
+            取消
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            form="publish-task-form"
+          >
+            发布任务
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/task.js"></script>
+    <script src="js/calendar.js"></script>
+    <script src="js/settings.js"></script>
+  </body>
+</html>
