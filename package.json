@@ -4,13 +4,25 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "spellcheck": "cspell 'src/**/*.{ts,js,html}' -c .cspell.json"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.18.1",
   "devDependencies": {
-    "electron": "^38.3.0"
+    "cspell": "^9.2.1",
+    "electron": "^38.3.0",
+    "eslint": "^9.38.0",
+    "prettier": "3.6.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   }
 }
