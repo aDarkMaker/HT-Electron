@@ -18,6 +18,81 @@
         sans-serif;
 }
 
+/* 头像设置样式 */
+.setting-item.avatar-setting {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.avatar-upload-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 12px;
+}
+
+.avatar-preview-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #e2e8f0;
+    background: #f7fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+    gap: 4px;
+}
+
+.avatar-upload-overlay:hover {
+    opacity: 1;
+}
+
+.avatar-upload-overlay img {
+    filter: invert(1);
+}
+
+.avatar-upload-overlay span {
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
 .settings-section {
     margin-bottom: 32px;
 }
