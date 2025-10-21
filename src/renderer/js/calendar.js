@@ -108,8 +108,8 @@ class CalendarManager {
     createEventElement(event) {
         return `
             <div class="calendar-event ${event.type}" 
-                 data-event-id="${event.id}"
-                 title="${this.escapeHtml(event.title)}">
+                data-event-id="${event.id}"
+                title="${this.escapeHtml(event.title)}">
                 ${this.escapeHtml(event.title)}
             </div>
         `;
