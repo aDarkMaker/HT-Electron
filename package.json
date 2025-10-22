@@ -19,7 +19,7 @@
     ],
     "author": "HXK Team",
     "license": "MIT",
-    "packageManager": "pnpm@10.18.1",
+    "packageManager": "pnpm@10.19.0",
     "devDependencies": {
         "cspell": "^9.2.1",
         "electron": "^38.3.0",
@@ -30,6 +30,8 @@
         "prettier": "3.6.2"
     },
     "dependencies": {
+        "@grpc/grpc-js": "^1.14.0",
+        "@grpc/proto-loader": "^0.8.0",
         "electron-store": "^10.0.0",
         "eslint-plugin-jsdoc": "^61.1.5",
         "jsdoc": "^4.0.5"
