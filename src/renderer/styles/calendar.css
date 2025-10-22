@@ -1237,3 +1237,7 @@
 .theme-dark .calendar-title {
     color: white;
 }
+
+.theme-dark .event-detail-value {
+    color: white;
+}
