@@ -1,3 +1,6 @@
+// 导入自定义下拉框
+import { initCustomSelects } from './custom-select.js';
+
 // 任务管理器
 class TaskManager {
     constructor(app) {
@@ -380,6 +383,8 @@ class TaskManager {
         if (modal) {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
+            // 初始化模态框中的自定义下拉框
+            setTimeout(() => initCustomSelects(), 0);
         }
     }
 

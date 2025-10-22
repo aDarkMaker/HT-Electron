@@ -3,6 +3,7 @@ import { NavigationManager } from './navigation.js';
 import { TaskManager } from './task.js';
 import { CalendarManager } from './calendar.js';
 import { SettingsManager } from './settings.js';
+import { initCustomSelects } from './custom-select.js';
 
 // 主应用类
 class HXKTerminalApp {
@@ -219,6 +220,9 @@ class HXKTerminalApp {
 
         // 确保导航栏也更新用户信息
         this.navigation.updateUserInfo();
+
+        // 初始化自定义下拉框
+        initCustomSelects();
     }
 
     navigateToView(viewName) {
@@ -250,6 +254,8 @@ class HXKTerminalApp {
                 break;
             case 'settings':
                 this.settingsManager.renderSettings();
+                // 重新初始化下拉框（因为渲染settings会重新生成HTML）
+                setTimeout(() => initCustomSelects(), 0);
                 break;
         }
     }

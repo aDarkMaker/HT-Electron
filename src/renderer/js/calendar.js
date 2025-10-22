@@ -1,3 +1,6 @@
+// 导入自定义下拉框
+import { initCustomSelects } from './custom-select.js';
+
 // 日历管理器
 class CalendarManager {
     constructor(app) {
@@ -900,6 +903,9 @@ class CalendarManager {
             if (dateInput) {
                 dateInput.value = today.toISOString().split('T')[0];
             }
+
+            // 初始化模态框中的自定义下拉框
+            setTimeout(() => initCustomSelects(), 0);
         }
     }
 

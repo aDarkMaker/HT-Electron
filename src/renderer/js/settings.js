@@ -9,7 +9,9 @@ class SettingsManager {
             notifications: true,
             autoSave: true,
             showCompletedTasks: true,
-            avatar: null // 存储用户头像的base64数据
+            avatar: null,
+            downloadPath: '',
+            cloudDriveUrl: ''
         };
 
         this.init();
@@ -18,11 +20,12 @@ class SettingsManager {
     init() {
         this.loadSettings();
         this.bindEvents();
+        this.initThemeWatcher();
     }
 
     async loadSettings() {
         try {
-            if (window.electronAPI) {
+            if (window.Electron) {
                 const savedSettings =
                     await window.electronAPI.getStoreValue('settings');
 
@@ -37,11 +40,8 @@ class SettingsManager {
 
     async saveSettings() {
         try {
-            if (window.electronAPI) {
-                await window.electronAPI.setStoreValue(
-                    'settings',
-                    this.settings
-                );
+            if (window.Electron) {
+                await window.Electron.setStoreValue('settings', this.settings);
                 console.log('设置保存成功');
             }
         } catch (error) {
@@ -54,6 +54,98 @@ class SettingsManager {
         document.addEventListener('settings-changed', (event) => {
             this.updateSettings(event.detail.settings);
         });
+    }
+
+    initThemeWatcher() {
+        // 监听系统主题变化（支持macOS和Windows）
+        if (window.matchMedia) {
+            const darkModeMediaQuery = window.matchMedia(
+                '(prefers-color-scheme: dark)'
+            );
+
+            // 初始应用主题
+            this.applyTheme();
+
+            // 监听系统主题变化
+            const handleThemeChange = (e) => {
+                // 只有在"跟随系统"模式下才响应系统主题变化
+                if (this.settings.theme === 'auto') {
+                    console.log(
+                        `系统主题已变更为: ${e.matches ? '深色' : '浅色'}`
+                    );
+                    this.applyTheme();
+                }
+            };
+
+            // 使用标准的 addEventListener
+            darkModeMediaQuery.addEventListener('change', handleThemeChange);
+
+            this.darkModeMediaQuery = darkModeMediaQuery;
+        }
+    }
+
+    async selectDownloadPath() {
+        try {
+            if (window.Electron && window.Electron.selectDirectory) {
+                const path = await window.Electron.selectDirectory();
+                if (path) {
+                    this.settings.downloadPath = path;
+                    await this.saveSettings();
+
+                    const downloadPathInput =
+                        document.getElementById('download-path');
+                    if (downloadPathInput) {
+                        downloadPathInput.value = path;
+                    }
+
+                    this.app.showNotification('下载路径已更新', 'success');
+                }
+            } else {
+                // Fallback for web version
+                this.app.showNotification(
+                    '此功能需要在桌面应用中使用',
+                    'warning'
+                );
+            }
+        } catch (error) {
+            console.error('选择路径失败:', error);
+            this.app.showNotification('选择路径失败', 'error');
+        }
+    }
+
+    async saveCloudDriveUrl() {
+        try {
+            const cloudDriveUrlInput =
+                document.getElementById('cloud-drive-url');
+            if (cloudDriveUrlInput) {
+                this.settings.cloudDriveUrl = cloudDriveUrlInput.value.trim();
+                await this.saveSettings();
+
+                // 保存云盘设置到localStorage
+                if (this.settings.cloudDriveUrl) {
+                    localStorage.setItem(
+                        'cloudDriveSettings',
+                        JSON.stringify({
+                            url: this.settings.cloudDriveUrl
+                        })
+                    );
+
+                    // 通知文件管理器重新加载
+                    const event = new CustomEvent(
+                        'cloud-drive-settings-updated',
+                        {
+                            detail: { url: this.settings.cloudDriveUrl }
+                        }
+                    );
+                    document.dispatchEvent(event);
+                }
+
+                this.app.showNotification('云盘链接已保存', 'success');
+            }
+        } catch (error) {
+            console.error('保存云盘链接失败:', error);
+            this.app.showNotification('保存云盘链接失败', 'error');
+        }
     }
 
     renderSettings() {
@@ -133,23 +225,12 @@ class SettingsManager {
             <div class="settings-section">
                 <h3>数据管理</h3>
                 <div class="setting-item">
-                    <label>导出数据</label>
-                    <div class="setting-button-group">
-                        <button class="setting-btn primary" id="export-data-btn">导出</button>
-                    </div>
+                    <label>默认下载路径</label>
+                    <input type="text" id="download-path" placeholder="点击选择下载路径" readonly value="${this.escapeHtml(this.settings.downloadPath || '')}">
                 </div>
                 <div class="setting-item">
-                    <label>导入数据</label>
-                    <div class="setting-button-group">
-                        <input type="file" id="import-file-input" accept=".json" style="display: none;">
-                        <button class="setting-btn" id="import-data-btn">导入</button>
-                    </div>
-                </div>
-                <div class="setting-item">
-                    <label>清除数据</label>
-                    <div class="setting-button-group">
-                        <button class="setting-btn danger" id="clear-data-btn">清除</button>
-                    </div>
+                    <label>阿里云盘链接</label>
+                    <input type="url" id="cloud-drive-url" placeholder="https://www.aliyundrive.com/..." value="${this.escapeHtml(this.settings.cloudDriveUrl || '')}">
                 </div>
             </div>
 
@@ -164,7 +245,7 @@ class SettingsManager {
                 </div>
                 <div class="setting-item">
                     <label>开发者</label>
-                    <span>HXK Team</span>
+                    <span>HXK Team —— Orange</span>
                 </div>
             </div>
         `;
@@ -225,7 +306,15 @@ class SettingsManager {
                 this.settings.theme = event.target.value;
                 this.saveSettings();
                 this.applyTheme();
-                this.app.showNotification('主题已更新', 'success');
+
+                // 根据不同模式显示不同提示
+                if (this.settings.theme === 'auto') {
+                    this.app.showNotification('主题将跟随系统设置', 'success');
+                } else if (this.settings.theme === 'dark') {
+                    this.app.showNotification('已切换到深色主题', 'success');
+                } else {
+                    this.app.showNotification('已切换到浅色主题', 'success');
+                }
             });
         }
 
@@ -273,32 +362,19 @@ class SettingsManager {
             });
         }
 
-        // 导出数据
-        const exportBtn = document.getElementById('export-data-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => {
-                this.exportData();
+        // 点击下载路径输入框选择目录
+        const downloadPathInput = document.getElementById('download-path');
+        if (downloadPathInput) {
+            downloadPathInput.addEventListener('click', async () => {
+                await this.selectDownloadPath();
             });
         }
 
-        // 导入数据
-        const importBtn = document.getElementById('import-data-btn');
-        const importInput = document.getElementById('import-file-input');
-        if (importBtn && importInput) {
-            importBtn.addEventListener('click', () => {
-                importInput.click();
-            });
-
-            importInput.addEventListener('change', (event) => {
-                this.importData(event.target.files[0]);
-            });
-        }
-
-        // 清除数据
-        const clearBtn = document.getElementById('clear-data-btn');
-        if (clearBtn) {
-            clearBtn.addEventListener('click', () => {
-                this.clearData();
+        // 云盘链接输入框修改后自动保存
+        const cloudDriveUrlInput = document.getElementById('cloud-drive-url');
+        if (cloudDriveUrlInput) {
+            cloudDriveUrlInput.addEventListener('change', async () => {
+                await this.saveCloudDriveUrl();
             });
         }
     }
@@ -447,139 +523,42 @@ class SettingsManager {
 
     applyTheme() {
         const body = document.body;
+        const html = document.documentElement;
 
         // 移除现有主题类
         body.classList.remove('theme-light', 'theme-dark');
+        html.classList.remove('theme-light', 'theme-dark');
+
+        let appliedTheme = '';
 
         // 应用新主题
         if (this.settings.theme === 'dark') {
+            appliedTheme = 'theme-dark';
             body.classList.add('theme-dark');
+            html.classList.add('theme-dark');
         } else if (this.settings.theme === 'light') {
+            appliedTheme = 'theme-light';
             body.classList.add('theme-light');
+            html.classList.add('theme-light');
         } else {
-            // 跟随系统
+            // 跟随系统（auto模式）
             const prefersDark = window.matchMedia(
                 '(prefers-color-scheme: dark)'
             ).matches;
-            body.classList.add(prefersDark ? 'theme-dark' : 'theme-light');
-        }
-    }
 
-    async exportData() {
-        try {
-            const data = {
-                tasks: this.app.tasks,
-                myTasks: this.app.myTasks,
-                calendarEvents: this.app.calendarEvents,
-                settings: this.settings,
-                exportDate: new Date().toISOString()
-            };
+            appliedTheme = prefersDark ? 'theme-dark' : 'theme-light';
+            body.classList.add(appliedTheme);
+            html.classList.add(appliedTheme);
 
-            const dataStr = JSON.stringify(data, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `hxk-terminal-backup-${new Date().toISOString().split('T')[0]}.json`;
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            URL.revokeObjectURL(url);
-
-            this.app.showNotification('数据导出成功', 'success');
-        } catch (error) {
-            console.error('导出数据失败:', error);
-            this.app.showNotification('导出数据失败', 'error');
-        }
-    }
-
-    async importData(file) {
-        if (!file) return;
-
-        try {
-            const text = await file.text();
-            const data = JSON.parse(text);
-
-            // 验证数据格式
-            if (!this.validateImportData(data)) {
-                this.app.showNotification('数据格式不正确', 'error');
-                return;
-            }
-
-            // 确认导入
-            if (!confirm('导入数据将覆盖当前所有数据，确定要继续吗？')) {
-                return;
-            }
-
-            // 导入数据
-            if (data.tasks) this.app.tasks = data.tasks;
-            if (data.myTasks) this.app.myTasks = data.myTasks;
-            if (data.calendarEvents)
-                this.app.calendarEvents = data.calendarEvents;
-            if (data.settings) {
-                this.settings = { ...this.settings, ...data.settings };
-                await this.saveSettings();
-            }
-
-            // 保存到存储
-            await this.app.saveData();
-
-            // 更新界面
-            this.app.updateTaskCounts();
-            if (this.app.taskManager) {
-                this.app.taskManager.renderTasks();
-            }
-            if (this.app.calendarManager) {
-                this.app.calendarManager.renderCalendar();
-            }
-
-            this.app.showNotification('数据导入成功', 'success');
-        } catch (error) {
-            console.error('导入数据失败:', error);
-            this.app.showNotification('导入数据失败', 'error');
-        }
-    }
-
-    validateImportData(data) {
-        return (
-            data &&
-            typeof data === 'object' &&
-            Array.isArray(data.tasks) &&
-            Array.isArray(data.myTasks) &&
-            Array.isArray(data.calendarEvents)
-        );
-    }
-
-    async clearData() {
-        if (!confirm('确定要清除所有数据吗？此操作不可恢复！')) {
-            return;
+            console.log(
+                `跟随系统主题: ${prefersDark ? '深色模式' : '浅色模式'}`
+            );
         }
 
-        try {
-            // 清除数据
-            this.app.tasks = [];
-            this.app.myTasks = [];
-            this.app.calendarEvents = [];
-
-            // 保存到存储
-            await this.app.saveData();
-
-            // 更新界面
-            this.app.updateTaskCounts();
-            if (this.app.taskManager) {
-                this.app.taskManager.renderTasks();
-            }
-            if (this.app.calendarManager) {
-                this.app.calendarManager.renderCalendar();
-            }
-
-            this.app.showNotification('数据已清除', 'success');
-        } catch (error) {
-            console.error('清除数据失败:', error);
-            this.app.showNotification('清除数据失败', 'error');
+        // 通知Electron主进程主题变化（用于原生窗口标题栏等）
+        if (window.electronAPI && window.electronAPI.setTheme) {
+            const isDark = appliedTheme === 'theme-dark';
+            window.electronAPI.setTheme(isDark ? 'dark' : 'light');
         }
     }
 
@@ -603,7 +582,9 @@ class SettingsManager {
             notifications: true,
             autoSave: true,
             showCompletedTasks: true,
-            avatar: null
+            avatar: null,
+            downloadPath: '',
+            cloudDriveUrl: ''
         };
 
         await this.saveSettings();
