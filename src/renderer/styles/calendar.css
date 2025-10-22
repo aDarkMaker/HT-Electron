@@ -1241,3 +1241,15 @@
 .theme-dark .event-detail-value {
     color: white;
 }
+
+.theme-dark .status-value.status-confirmed {
+    color: #38a169 !important;
+}
+
+.theme-dark .status-value.status-absent {
+    color: #e53e3e;
+}
+
+.theme-dark .status-value.status-pending {
+    color: #d69e2e !important;
+}
