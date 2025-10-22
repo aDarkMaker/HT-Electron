@@ -20,7 +20,10 @@ function createWindow() {
             nodeIntegration: false,
             contextIsolation: true,
             enableRemoteModule: false,
-            preload: join(__dirname, 'preload.js')
+            preload: join(__dirname, 'preload.js'),
+            // DevMode
+            webSecurity: false,
+            allowRunningInsecureContent: true
         },
         icon: join(__dirname, '../assets/icon.png'),
         titleBarStyle: 'default',
