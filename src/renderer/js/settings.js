@@ -1,3 +1,6 @@
+// 导入国际化管理器
+import { i18n } from '../i18n/i18n.js';
+
 // 设置管理器
 class SettingsManager {
     constructor(app) {
@@ -17,10 +20,11 @@ class SettingsManager {
         this.init();
     }
 
-    init() {
-        this.loadSettings();
+    async init() {
+        await this.loadSettings();
         this.bindEvents();
         this.initThemeWatcher();
+        // 不再在这里初始化i18n，因为已经在app.js中初始化了
     }
 
     async loadSettings() {
@@ -81,6 +85,34 @@ class SettingsManager {
             darkModeMediaQuery.addEventListener('change', handleThemeChange);
 
             this.darkModeMediaQuery = darkModeMediaQuery;
+        }
+    }
+
+    async initI18n() {
+        try {
+            // 检查是否已经初始化过
+            if (i18n.getCurrentLanguage()) {
+                console.log('✅ 国际化管理器已初始化，跳过重复初始化');
+                return;
+            }
+
+            // 初始化国际化管理器
+            await i18n.init();
+
+            // 设置当前语言
+            await i18n.setLanguage(this.settings.language);
+
+            // 添加语言变化监听器
+            i18n.addLanguageChangeListener((language) => {
+                console.log(`🌐 语言已切换为: ${language}`);
+                // 更新设置中的语言
+                this.settings.language = language;
+                this.saveSettings();
+            });
+
+            console.log('✅ 国际化管理器初始化完成');
+        } catch (error) {
+            console.error('❌ 国际化管理器初始化失败:', error);
         }
     }
 
@@ -321,10 +353,30 @@ class SettingsManager {
         // 语言选择
         const languageSelect = document.getElementById('language-select');
         if (languageSelect) {
-            languageSelect.addEventListener('change', (event) => {
-                this.settings.language = event.target.value;
-                this.saveSettings();
-                this.app.showNotification('语言设置已更新', 'success');
+            languageSelect.addEventListener('change', async (event) => {
+                const newLanguage = event.target.value;
+                this.settings.language = newLanguage;
+                await this.saveSettings();
+
+                // 切换语言
+                const success = await i18n.setLanguage(newLanguage);
+
+                if (success) {
+                    // 通知主进程更新菜单
+                    window.electronAPI.setLanguage(newLanguage);
+
+                    // 更新页面文本（不重新渲染设置页面）
+                    i18n.updatePageTexts();
+
+                    this.app.showNotification(
+                        newLanguage === 'zh-CN'
+                            ? '语言已切换为中文'
+                            : 'Language switched to English',
+                        'success'
+                    );
+                } else {
+                    this.app.showNotification('语言切换失败', 'error');
+                }
             });
         }
 

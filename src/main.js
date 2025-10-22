@@ -48,13 +48,48 @@ function createWindow() {
     createMenu();
 }
 
-function createMenu() {
+async function createMenu() {
+    // 获取当前语言设置
+    const currentLanguage = store.get('language', 'zh-CN');
+
+    // 根据语言设置菜单文本
+    const menuTexts = {
+        'zh-CN': {
+            file: '文件',
+            newTask: '新建任务',
+            exit: '退出',
+            view: '视图',
+            reload: '重新加载',
+            toggleDevTools: '切换开发者工具',
+            actualSize: '实际大小',
+            zoomIn: '放大',
+            zoomOut: '缩小',
+            help: '帮助',
+            about: '关于 HXK Terminal'
+        },
+        'en-US': {
+            file: 'File',
+            newTask: 'New Task',
+            exit: 'Exit',
+            view: 'View',
+            reload: 'Reload',
+            toggleDevTools: 'Toggle Developer Tools',
+            actualSize: 'Actual Size',
+            zoomIn: 'Zoom In',
+            zoomOut: 'Zoom Out',
+            help: 'Help',
+            about: 'About HXK Terminal'
+        }
+    };
+
+    const texts = menuTexts[currentLanguage] || menuTexts['zh-CN'];
+
     const template = [
         {
-            label: '文件',
+            label: texts.file,
             submenu: [
                 {
-                    label: '新建任务',
+                    label: texts.newTask,
                     accelerator: 'CmdOrCtrl+N',
                     click: () => {
                         mainWindow.webContents.send('menu-new-task');
@@ -62,7 +97,7 @@ function createMenu() {
                 },
                 { type: 'separator' },
                 {
-                    label: '退出',
+                    label: texts.exit,
                     accelerator:
                         process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
                     click: () => {
@@ -72,17 +107,17 @@ function createMenu() {
             ]
         },
         {
-            label: '视图',
+            label: texts.view,
             submenu: [
                 {
-                    label: '重新加载',
+                    label: texts.reload,
                     accelerator: 'CmdOrCtrl+R',
                     click: () => {
                         mainWindow.reload();
                     }
                 },
                 {
-                    label: '切换开发者工具',
+                    label: texts.toggleDevTools,
                     accelerator:
                         process.platform === 'darwin'
                             ? 'Alt+Cmd+I'
@@ -93,14 +128,14 @@ function createMenu() {
                 },
                 { type: 'separator' },
                 {
-                    label: '实际大小',
+                    label: texts.actualSize,
                     accelerator: 'CmdOrCtrl+0',
                     click: () => {
                         mainWindow.webContents.setZoomLevel(0);
                     }
                 },
                 {
-                    label: '放大',
+                    label: texts.zoomIn,
                     accelerator: 'CmdOrCtrl+Plus',
                     click: () => {
                         const currentZoom =
@@ -109,7 +144,7 @@ function createMenu() {
                     }
                 },
                 {
-                    label: '缩小',
+                    label: texts.zoomOut,
                     accelerator: 'CmdOrCtrl+-',
                     click: () => {
                         const currentZoom =
@@ -120,10 +155,10 @@ function createMenu() {
             ]
         },
         {
-            label: '帮助',
+            label: texts.help,
             submenu: [
                 {
-                    label: '关于 HXK Terminal',
+                    label: texts.about,
                     click: () => {
                         mainWindow.webContents.send('menu-about');
                     }
@@ -195,6 +230,23 @@ ipcMain.on('set-theme', (event, theme) => {
     if (process.platform === 'win32') {
         const backgroundColor = theme === 'dark' ? '#1a202c' : '#F5F5F5';
         mainWindow.setBackgroundColor(backgroundColor);
+    }
+});
+
+// 语言设置
+ipcMain.on('set-language', async (event, language) => {
+    if (!mainWindow) return;
+
+    try {
+        // 保存语言设置
+        store.set('language', language);
+
+        // 重新创建菜单以应用新语言
+        await createMenu();
+
+        console.log(`语言已切换为: ${language}`);
+    } catch (error) {
+        console.error('语言切换失败:', error);
     }
 });
 

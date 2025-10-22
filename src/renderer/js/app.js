@@ -4,6 +4,7 @@ import { TaskManager } from './task.js';
 import { CalendarManager } from './calendar.js';
 import { SettingsManager } from './settings.js';
 import { initCustomSelects } from './custom-select.js';
+import { i18n } from '../i18n/i18n.js';
 
 // 主应用类
 class HXKTerminalApp {
@@ -19,6 +20,16 @@ class HXKTerminalApp {
 
     async init() {
         console.log('🚀 HXK Terminal 应用启动中...');
+
+        // 首先初始化国际化（只初始化一次）
+        if (!i18n.getCurrentLanguage()) {
+            await i18n.init();
+            // 设置初始语言
+            const savedLanguage =
+                (await window.electronAPI?.getStoreValue('language')) ||
+                'zh-CN';
+            await i18n.setLanguage(savedLanguage);
+        }
 
         await this.loadData();
 
@@ -223,6 +234,11 @@ class HXKTerminalApp {
 
         // 初始化自定义下拉框
         initCustomSelects();
+
+        // 更新页面文本（应用启动时）
+        setTimeout(() => {
+            i18n.updatePageTexts();
+        }, 100);
     }
 
     navigateToView(viewName) {

@@ -14,6 +14,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // 主题相关
     setTheme: (theme) => ipcRenderer.send('set-theme', theme),
 
+    // 语言相关
+    setLanguage: (language) => ipcRenderer.send('set-language', language),
+
     // 菜单事件监听
     onMenuNewTask: (callback) => {
         ipcRenderer.on('menu-new-task', callback);
