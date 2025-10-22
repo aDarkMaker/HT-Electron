@@ -13,6 +13,8 @@
         <link rel="stylesheet" href="styles/task.css" />
         <link rel="stylesheet" href="styles/calendar.css" />
         <link rel="stylesheet" href="styles/settings.css" />
+        <link rel="stylesheet" href="styles/files.css" />
+        <link rel="stylesheet" href="styles/custom-select.css" />
         <style>
             @font-face {
                 font-family: 'AlimamaShuHeiTi-Bold';
@@ -239,10 +241,13 @@
                 <!-- 文件视图 -->
                 <div id="files-view" class="view">
                     <div class="view-header">
-                        <h2>文件管理</h2>
+                        <div class="view-title">
+                            <h2>文件管理</h2>
+                            <p>对，就是你，记得同步工作！！！</p>
+                        </div>
                     </div>
                     <div class="files-content">
-                        <p>文件管理功能开发中...</p>
+                        <!-- 云盘内容区域 -->
                     </div>
                 </div>
 
@@ -279,6 +284,73 @@
                                     <option value="dark">深色主题</option>
                                     <option value="auto">跟随系统</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h3>
+                                <img
+                                    src="Assets/Icons/folder.svg"
+                                    width="20"
+                                    height="20"
+                                    alt="数据管理"
+                                />
+                                数据管理
+                            </h3>
+                            <div class="setting-item">
+                                <label for="download-path">
+                                    默认下载路径
+                                    <span class="setting-description"
+                                        >设置文件默认下载保存位置</span
+                                    >
+                                </label>
+                                <div class="path-input-group">
+                                    <input
+                                        type="text"
+                                        id="download-path"
+                                        placeholder="选择下载路径"
+                                        readonly
+                                    />
+                                    <button
+                                        id="select-download-path-btn"
+                                        class="btn btn-secondary"
+                                    >
+                                        <img
+                                            src="Assets/Icons/folder.svg"
+                                            width="16"
+                                            height="16"
+                                            alt="浏览"
+                                        />
+                                        浏览
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <label for="cloud-drive-url">
+                                    阿里云盘链接
+                                    <span class="setting-description"
+                                        >配置阿里云盘Web访问地址</span
+                                    >
+                                </label>
+                                <input
+                                    type="url"
+                                    id="cloud-drive-url"
+                                    placeholder="https://www.aliyundrive.com/..."
+                                />
+                            </div>
+                            <div class="setting-actions">
+                                <button
+                                    id="save-data-settings-btn"
+                                    class="btn btn-primary"
+                                >
+                                    <img
+                                        src="Assets/Icons/save.svg"
+                                        width="16"
+                                        height="16"
+                                        alt="保存"
+                                    />
+                                    保存设置
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -590,10 +662,12 @@
             </div>
         </div>
 
+        <script type="module" src="js/custom-select.js"></script>
         <script type="module" src="js/app.js"></script>
         <script type="module" src="js/navigation.js"></script>
         <script type="module" src="js/task.js"></script>
         <script type="module" src="js/calendar.js"></script>
         <script type="module" src="js/settings.js"></script>
+        <script type="module" src="js/files.js"></script>
     </body>
 </html>
