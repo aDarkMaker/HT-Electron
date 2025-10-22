@@ -13,7 +13,8 @@
         "pnpm-workspace.yaml",
         "build/**",
         "coverage/**",
-        ".gitignore"
+        ".gitignore",
+        "AliCloud/**"
     ],
     "version": "0.2",
     "words": [
