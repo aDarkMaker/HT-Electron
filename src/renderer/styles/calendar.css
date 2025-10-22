@@ -1247,7 +1247,7 @@
 }
 
 .theme-dark .status-value.status-absent {
-    color: #e53e3e;
+    color: #e53e3e !important;
 }
 
 .theme-dark .status-value.status-pending {
