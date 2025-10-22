@@ -5,7 +5,8 @@
         "HXK",
         "HXKTeam",
         "HXKTeam",
-        "electron"
+        "electron",
+        "Bili"
     ],
     "ignorePaths": [
         "node_modules/**",
@@ -25,6 +26,7 @@
         "Aliyun",
         "aliyundrive",
         "Balancce",
+        "Bili",
         "Cach",
         "chech",
         "clouddrive",
