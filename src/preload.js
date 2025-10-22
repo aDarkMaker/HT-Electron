@@ -8,6 +8,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.invoke('set-store-value', key, value),
     deleteStoreValue: (key) => ipcRenderer.invoke('delete-store-value', key),
 
+    // 文件系统相关
+    selectDirectory: () => ipcRenderer.invoke('select-directory'),
+
+    // 主题相关
+    setTheme: (theme) => ipcRenderer.send('set-theme', theme),
+
     // 菜单事件监听
     onMenuNewTask: (callback) => {
         ipcRenderer.on('menu-new-task', callback);

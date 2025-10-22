@@ -1,19 +1,16 @@
-import { app, BrowserWindow, Menu, ipcMain } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import Store from 'electron-store';
 
-// ES 模块中获取 __dirname 的等价物
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// 初始化数据存储
 const store = new Store();
 
 let mainWindow;
 
 function createWindow() {
-    // 创建浏览器窗口
     mainWindow = new BrowserWindow({
         width: 1000,
         height: 600,
@@ -31,10 +28,8 @@ function createWindow() {
         backgroundColor: '#F5F5F5'
     });
 
-    // 加载应用的 index.html
     mainWindow.loadFile(join(__dirname, 'renderer/index.html'));
 
-    // 当窗口准备好显示时显示窗口
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
 
@@ -159,7 +154,6 @@ app.on('activate', () => {
     }
 });
 
-// IPC 通信处理
 ipcMain.handle('get-store-value', (event, key) => {
     return store.get(key);
 });
@@ -172,6 +166,36 @@ ipcMain.handle('set-store-value', (event, key, value) => {
 ipcMain.handle('delete-store-value', (event, key) => {
     store.delete(key);
     return true;
+});
+
+// 选择目录
+ipcMain.handle('select-directory', async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory']
+    });
+
+    if (result.canceled) {
+        return null;
+    } else {
+        return result.filePaths[0];
+    }
+});
+
+// 主题设置
+ipcMain.on('set-theme', (event, theme) => {
+    if (!mainWindow) return;
+
+    // macOS 原生支持深色模式
+    if (process.platform === 'darwin') {
+        // macOS 会自动处理窗口外观
+        console.log(`主题已切换为: ${theme}`);
+    }
+
+    // Windows 可以通过设置背景色来适应主题
+    if (process.platform === 'win32') {
+        const backgroundColor = theme === 'dark' ? '#1a202c' : '#F5F5F5';
+        mainWindow.setBackgroundColor(backgroundColor);
+    }
 });
 
 // 安全设置
