@@ -43,14 +43,18 @@
 .tab-btn:hover {
     background: #f1f5f9;
     color: #334155;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
 }
 
 .tab-btn.active {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.tab-btn.active:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
 }
 
 .tab-btn svg {
@@ -453,4 +457,150 @@
     .my-task-content .task-actions {
         margin-left: 0;
     }
+}
+
+/* ==================== 深色主题 ==================== */
+/* 任务标签页 */
+.theme-dark .task-tabs {
+    background: #1a202c;
+    padding: 6px;
+}
+
+.theme-dark .tab-btn {
+    color: #cbd5e0;
+}
+
+.theme-dark .tab-btn:hover {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+.theme-dark .tab-btn.active {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    color: #f7fafc;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.theme-dark .tab-btn.active:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.5);
+}
+
+.theme-dark .tab-btn .count-badge {
+    background: rgba(124, 58, 237, 0.3);
+    color: #a78bfa;
+}
+
+.theme-dark .tab-btn .count-badge-danger {
+    background: rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+/* 任务卡片 */
+.theme-dark .task-card {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .task-card:hover {
+    border-color: #4a5568;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .task-card-header {
+    border-bottom: 1px solid #2d3748;
+}
+
+.theme-dark .task-title {
+    color: #f7fafc;
+}
+
+.theme-dark .task-type {
+    color: #cbd5e0;
+}
+
+.theme-dark .task-publisher {
+    color: #a0aec0;
+}
+
+.theme-dark .task-description {
+    color: #cbd5e0;
+}
+
+.theme-dark .deadline-info {
+    color: #cbd5e0;
+}
+
+.theme-dark .deadline-overdue {
+    color: #fca5a5;
+}
+
+/* 操作按钮 - 深色主题 */
+.theme-dark .accept-btn {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 2px 6px rgba(52, 211, 153, 0.3);
+}
+
+.theme-dark .accept-btn:hover {
+    box-shadow: 0 4px 10px rgba(52, 211, 153, 0.4);
+}
+
+.theme-dark .complete-btn {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    box-shadow: 0 2px 6px rgba(96, 165, 250, 0.3);
+}
+
+.theme-dark .complete-btn:hover {
+    box-shadow: 0 4px 10px rgba(96, 165, 250, 0.4);
+}
+
+.theme-dark .abandon-btn {
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    box-shadow: 0 2px 6px rgba(248, 113, 113, 0.3);
+}
+
+.theme-dark .abandon-btn:hover {
+    box-shadow: 0 4px 10px rgba(248, 113, 113, 0.4);
+}
+
+.theme-dark .delete-btn {
+    background: #2d3748;
+    color: #fca5a5;
+}
+
+.theme-dark .delete-btn:hover {
+    background: #374151;
+}
+
+/* 空状态 - 深色主题 */
+.theme-dark .empty-state {
+    color: #718096;
+}
+
+.theme-dark .empty-state h3 {
+    color: #cbd5e0;
+}
+
+.theme-dark .empty-state p {
+    color: #718096;
+}
+
+/* 我的任务特殊样式 - 深色主题 */
+.theme-dark .my-task-card {
+    background: #1e293b;
+    border-left: 4px solid #7c3aed;
+}
+
+.theme-dark .my-task-card:hover {
+    background: #1e293b;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark
+    .task-checkbox-wrapper
+    input[type='checkbox']:checked
+    + label::before {
+    background: #7c3aed;
+    border-color: #7c3aed;
 }

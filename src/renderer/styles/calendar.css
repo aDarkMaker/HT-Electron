@@ -899,3 +899,341 @@
         height: 32px;
     }
 }
+
+/* ==================== 深色主题 ==================== */
+/* 日历内容区域 */
+.theme-dark .calendar-content {
+    background: #1a202c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* 日历容器 */
+.theme-dark #calendar-container {
+    background: #1a202c;
+    border: 1px solid #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 日历网格 */
+.theme-dark .calendar-grid {
+    background: #0f1419;
+    border: 1px solid #334155;
+}
+
+.theme-dark .month-year {
+    color: #f7fafc;
+}
+
+.theme-dark .calendar-nav-btn {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+.theme-dark .calendar-nav-btn:hover {
+    background: #475569;
+}
+
+.theme-dark .today-btn {
+    background: #7c3aed;
+    color: white;
+}
+
+.theme-dark .today-btn:hover {
+    background: #6d28d9;
+}
+
+/* 星期标题 */
+.theme-dark .calendar-weekdays {
+    background: #1e293b;
+    border-bottom: 1px solid #4a5568;
+}
+
+.theme-dark .weekday {
+    color: #cbd5e0;
+}
+
+/* 日期格子 */
+.theme-dark .calendar-day {
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+}
+
+.theme-dark .calendar-day:hover {
+    background: #334155;
+    border-color: #475569;
+}
+
+.theme-dark .calendar-day.other-month {
+    background: #0f1419;
+    color: #4a5568;
+}
+
+.theme-dark .calendar-day.today {
+    background: #1e293b;
+    border: 2px solid #7c3aed;
+}
+
+.theme-dark .calendar-day.selected {
+    background: #2d3748;
+    border-color: #7c3aed;
+}
+
+.theme-dark .calendar-day.has-events {
+    background: #1e293b;
+}
+
+.theme-dark .calendar-day.has-events:hover {
+    background: #334155;
+}
+
+.theme-dark .day-number {
+    color: #f7fafc;
+}
+
+.theme-dark .calendar-day.other-month .day-number {
+    color: #4a5568;
+}
+
+.theme-dark .calendar-day.today .day-number {
+    background: #7c3aed;
+    color: white;
+}
+
+/* 事件标记 */
+.theme-dark .event-marker {
+    background: #7c3aed;
+}
+
+.theme-dark .event-marker-meeting {
+    background: #60a5fa;
+}
+
+.theme-dark .event-marker-deadline {
+    background: #f87171;
+}
+
+.theme-dark .event-marker-task {
+    background: #34d399;
+}
+
+/* 事件列表 */
+.theme-dark .event-item {
+    background: #1a202c;
+    border: 1px solid #2d3748;
+}
+
+.theme-dark .event-item:hover {
+    background: #2d3748;
+    border-color: #4a5568;
+}
+
+.theme-dark .event-time {
+    color: #cbd5e0;
+}
+
+.theme-dark .event-title {
+    color: #f7fafc;
+}
+
+.theme-dark .event-description {
+    color: #a0aec0;
+}
+
+.theme-dark .event-type-badge {
+    background: #2d3748;
+    color: #cbd5e0;
+}
+
+.theme-dark .event-type-meeting {
+    background: #1e3a8a;
+    color: #93c5fd;
+}
+
+.theme-dark .event-type-deadline {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.theme-dark .event-type-task {
+    background: #064e3b;
+    color: #6ee7b7;
+}
+
+/* 添加事件模态框 */
+.theme-dark .add-event-modal {
+    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    border: 1px solid #334155;
+}
+
+.theme-dark .add-event-modal .modal-content {
+    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    border: 1px solid #334155;
+}
+
+.theme-dark .add-event-modal .header-content {
+    color: #f7fafc;
+}
+
+.theme-dark .add-event-modal .header-text h3 {
+    color: #f1f5f9;
+    font-weight: 700;
+}
+
+.theme-dark .add-event-modal .header-text p {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.theme-dark .header-icon {
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.theme-dark .section-title {
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.theme-dark .section-title img {
+    filter: brightness(1.2);
+}
+
+.theme-dark .duration-unit {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.theme-dark .form-row .form-group label img {
+    filter: brightness(1.2);
+}
+
+/* 表单输入框样式 - 深色主题 */
+.theme-dark .add-event-modal .form-group label {
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.theme-dark .add-event-modal .form-group input,
+.theme-dark .add-event-modal .form-group textarea,
+.theme-dark .add-event-modal .form-group select {
+    background: #334155;
+    border: 2px solid #475569;
+    color: #f7fafc;
+}
+
+.theme-dark .add-event-modal .form-group input:focus,
+.theme-dark .add-event-modal .form-group textarea:focus,
+.theme-dark .add-event-modal .form-group select:focus {
+    background: #374151;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.theme-dark .add-event-modal .form-group input::placeholder,
+.theme-dark .add-event-modal .form-group textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* 事件详情模态框 */
+.theme-dark .event-modal-content {
+    background: #1a202c;
+}
+
+.theme-dark .event-modal-header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border-bottom: 1px solid #4a5568;
+}
+
+.theme-dark .event-modal-title {
+    color: #f7fafc;
+}
+
+.theme-dark .event-modal-body {
+    background: #1a202c;
+}
+
+.theme-dark .event-detail-section h4 {
+    color: #e2e8f0;
+}
+
+.theme-dark .event-detail-item {
+    background: #1e293b;
+    border: 1px solid #2d3748;
+}
+
+.theme-dark .event-detail-item:hover {
+    background: #334155;
+}
+
+.theme-dark .detail-icon-wrapper {
+    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+}
+
+.theme-dark .detail-icon-wrapper img,
+.theme-dark .event-detail-icon {
+    filter: brightness(0) invert(1);
+}
+
+.theme-dark .detail-text label {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.theme-dark .detail-text span {
+    color: #f7fafc;
+}
+
+.theme-dark .attendance-options {
+    background: #1e293b;
+}
+
+.theme-dark .attendance-option {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+.theme-dark .attendance-option:hover {
+    background: #374151;
+}
+
+.theme-dark .attendance-option.selected {
+    background: #7c3aed;
+    color: white;
+}
+
+.theme-dark .event-detail-attendance-btn {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+.theme-dark .event-detail-attendance-btn:hover {
+    background: #374151;
+}
+
+.theme-dark .event-detail-attendance-btn.accepted {
+    background: #064e3b;
+    color: #6ee7b7;
+}
+
+.theme-dark .event-detail-attendance-btn.declined {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.theme-dark .calendar-day-header {
+    background: none;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: none;
+}
+
+.theme-dark .calendar-title {
+    color: white;
+}

@@ -17,6 +17,19 @@
         sans-serif;
 }
 
+/* 禁止图片/图标被拖拽 */
+img {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: auto;
+}
+
 body {
     font-family:
         'AlimamaShuHeiTi-Bold',
@@ -393,4 +406,180 @@ body {
         width: 95%;
         margin: 20px;
     }
+}
+
+/* ==================== 深色主题 ==================== */
+.theme-dark {
+    background-color: #0f1419;
+    color: #f7fafc;
+}
+
+.theme-dark body {
+    background-color: #0f1419;
+    color: #f7fafc;
+}
+
+.theme-dark #app {
+    background-color: #0f1419;
+}
+
+.theme-dark .main-content {
+    background-color: #0f1419;
+}
+
+.theme-dark .view {
+    color: #f7fafc;
+}
+
+.theme-dark .view-title h2 {
+    color: #f7fafc;
+}
+
+.theme-dark .view-title p {
+    color: #cbd5e0;
+}
+
+/* 按钮 - 深色主题 */
+.theme-dark .primary-btn {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+}
+
+.theme-dark .primary-btn:hover {
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+}
+
+.theme-dark .btn-primary {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+.theme-dark .btn-secondary {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+.theme-dark .icon-btn {
+    color: #e2e8f0;
+}
+
+.theme-dark .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f7fafc;
+}
+
+/* 标签 - 深色主题 */
+.theme-dark .tag {
+    background: #4a5568;
+    color: #e2e8f0;
+}
+
+.theme-dark .tag-personal {
+    background: #134e4a;
+    color: #5eead4;
+}
+
+.theme-dark .tag-team {
+    background: #1e3a8a;
+    color: #93c5fd;
+}
+
+.theme-dark .priority-badge {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+.theme-dark .status-inprogress {
+    background: #78350f;
+    color: #fcd34d;
+}
+
+.theme-dark .status-completed {
+    background: #064e3b;
+    color: #6ee7b7;
+}
+
+/* 计数徽章 - 深色主题 */
+.theme-dark .count-badge {
+    background: #7c3aed;
+}
+
+.theme-dark .count-badge-danger {
+    background: #ef4444;
+}
+
+/* 模态框 - 深色主题 */
+.theme-dark .modal {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+}
+
+.theme-dark .modal-content {
+    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.8);
+    border: 1px solid #334155;
+}
+
+.theme-dark .modal-header {
+    border-bottom: 1px solid #334155;
+    background: linear-gradient(135deg, #1e293b 0%, #1a202c 100%);
+}
+
+.theme-dark .modal-header h3 {
+    color: #f1f5f9;
+    font-weight: 700;
+}
+
+.theme-dark .close-btn {
+    color: #94a3b8;
+}
+
+.theme-dark .close-btn:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+
+.theme-dark .modal-body {
+    color: #e2e8f0;
+    background: #1a202c;
+}
+
+.theme-dark .modal-footer {
+    border-top: 1px solid #334155;
+    background: linear-gradient(135deg, #1a202c 0%, #1e293b 100%);
+}
+
+/* 表单 - 深色主题 */
+.theme-dark .form-group label {
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.theme-dark .form-group input,
+.theme-dark .form-group textarea,
+.theme-dark .form-group select {
+    background: #334155;
+    border: 1px solid #475569;
+    color: #f7fafc;
+}
+
+.theme-dark .form-group input:focus,
+.theme-dark .form-group textarea:focus,
+.theme-dark .form-group select:focus {
+    background: #374151;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.theme-dark .form-group input::placeholder,
+.theme-dark .form-group textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* 欢迎页面 - 深色主题 */
+.theme-dark .welcome-section h1 {
+    color: #f7fafc;
+}
+
+.theme-dark .welcome-section p {
+    color: #cbd5e0;
 }

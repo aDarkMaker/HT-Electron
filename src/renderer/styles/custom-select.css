@@ -1,0 +1,179 @@
+/* 自定义下拉选择框样式 */
+.custom-select {
+    position: relative;
+    width: 200px;
+    user-select: none;
+}
+
+.custom-select-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.custom-select-trigger:hover {
+    border-color: #cbd5e0;
+}
+
+.custom-select.open .custom-select-trigger {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.custom-select-arrow {
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #718096;
+    transition: transform 0.2s ease;
+    margin-left: 8px;
+}
+
+.custom-select.open .custom-select-arrow {
+    transform: rotate(180deg);
+}
+
+.custom-select-options {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+}
+
+.custom-select.open .custom-select-options {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.custom-select-option {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #2d3748;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.custom-select-option:hover {
+    background: #f7fafc;
+}
+
+.custom-select-option.selected {
+    background: #edf2f7;
+    color: #667eea;
+    font-weight: 500;
+}
+
+.custom-select-option:first-child {
+    border-radius: 6px 6px 0 0;
+}
+
+.custom-select-option:last-child {
+    border-radius: 0 0 6px 6px;
+}
+
+/* 滚动条样式 */
+.custom-select-options::-webkit-scrollbar {
+    width: 6px;
+    display: block;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+}
+
+/* 禁用状态 */
+.custom-select.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.custom-select.disabled .custom-select-trigger {
+    background: #f7fafc;
+    cursor: not-allowed;
+}
+
+/* ==================== 深色主题 ==================== */
+.theme-dark .custom-select-trigger {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    color: #f7fafc;
+}
+
+.theme-dark .custom-select-trigger:hover {
+    border-color: #718096;
+}
+
+.theme-dark .custom-select.open .custom-select-trigger {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.theme-dark .custom-select-arrow {
+    border-top-color: #cbd5e0;
+}
+
+.theme-dark .custom-select-options {
+    background: #1a202c;
+    border: 1px solid #4a5568;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .custom-select-option {
+    color: #f7fafc;
+}
+
+.theme-dark .custom-select-option:hover {
+    background: #2d3748;
+}
+
+.theme-dark .custom-select-option.selected {
+    background: #374151;
+    color: #a78bfa;
+}
+
+.theme-dark .custom-select-options::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+.theme-dark .custom-select-options::-webkit-scrollbar-thumb {
+    background: #4a5568;
+}
+
+.theme-dark .custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+.theme-dark .custom-select.disabled .custom-select-trigger {
+    background: #1a202c;
+}

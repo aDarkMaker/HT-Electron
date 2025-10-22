@@ -139,6 +139,9 @@
     color: #2d3748;
     background: white;
     transition: border-color 0.2s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .setting-item input:focus,
@@ -306,4 +309,113 @@ input:checked + .setting-slider:before {
         width: 100%;
         text-align: center;
     }
+}
+
+/* ==================== 深色主题 ==================== */
+.theme-dark .settings-content {
+    background: #1a202c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .settings-section h3 {
+    color: #f7fafc;
+    border-bottom: 2px solid #4a5568;
+}
+
+.theme-dark .setting-item {
+    border-bottom: 1px solid #2d3748;
+}
+
+.theme-dark .setting-item label {
+    color: #e2e8f0;
+}
+
+.theme-dark .setting-item input,
+.theme-dark .setting-item select {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    color: #f7fafc;
+}
+
+.theme-dark .setting-item input:focus,
+.theme-dark .setting-item select:focus {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+}
+
+.theme-dark .setting-item input::placeholder {
+    color: #718096;
+}
+
+.theme-dark .setting-description {
+    color: #cbd5e0;
+}
+
+/* 开关 - 深色主题 */
+.theme-dark .setting-slider {
+    background-color: #4a5568;
+}
+
+.theme-dark input:checked + .setting-slider {
+    background-color: #7c3aed;
+}
+
+/* 按钮 - 深色主题 */
+.theme-dark .setting-btn {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    color: #e2e8f0;
+}
+
+.theme-dark .setting-btn:hover {
+    background: #374151;
+    border-color: #718096;
+}
+
+.theme-dark .setting-btn.primary {
+    background: #7c3aed;
+    color: white;
+    border-color: #7c3aed;
+}
+
+.theme-dark .setting-btn.primary:hover {
+    background: #6d28d9;
+    border-color: #6d28d9;
+}
+
+.theme-dark .setting-btn.danger {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border-color: #7f1d1d;
+}
+
+.theme-dark .setting-btn.danger:hover {
+    background: #991b1b;
+    border-color: #991b1b;
+}
+
+/* 状态指示器 - 深色主题 */
+.theme-dark .setting-status.success {
+    background: #064e3b;
+    color: #6ee7b7;
+}
+
+.theme-dark .setting-status.warning {
+    background: #78350f;
+    color: #fcd34d;
+}
+
+.theme-dark .setting-status.error {
+    background: #7f1d1d;
+    color: #fca5a5;
+}
+
+/* 头像 - 深色主题 */
+.theme-dark .avatar-preview {
+    background: #2d3748;
+    border: 3px solid #4a5568;
+}
+
+.theme-dark .avatar-upload-overlay {
+    background: rgba(0, 0, 0, 0.8);
 }

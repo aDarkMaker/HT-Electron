@@ -1,0 +1,30 @@
+/* 文件管理样式 */
+.files-content {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 180px);
+}
+
+@media (max-width: 768px) {
+    .files-content {
+        height: calc(100vh - 150px);
+    }
+}
+
+/* ==================== 深色主题 ==================== */
+.theme-dark .cloud-drive-container {
+    background: #1a202c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.theme-dark .cloud-drive-frame {
+    background: #0f1419;
+}
+
+.theme-dark .cloud-drive-placeholder h4 {
+    color: #e2e8f0;
+}
+
+.theme-dark .cloud-drive-placeholder p {
+    color: #718096;
+}

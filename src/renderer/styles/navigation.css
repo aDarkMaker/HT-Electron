@@ -17,6 +17,10 @@
         Helvetica,
         Arial,
         sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 /* 展开状态导航栏 */
@@ -272,4 +276,70 @@
         width: 16px;
         height: 16px;
     }
+}
+
+/* ==================== 深色主题 ==================== */
+.theme-dark .expanded-nav {
+    background: #1e293b;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .nav-header .icon-btn {
+    color: #e2e8f0;
+}
+
+.theme-dark .nav-header .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.theme-dark .user-avatar {
+    background: #334155;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    color: #7c3aed;
+}
+
+.theme-dark .user-name {
+    color: #e2e8f0;
+}
+
+.theme-dark .nav-item {
+    color: #e2e8f0;
+}
+
+.theme-dark .nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .nav-item.active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .nav-item .count-badge {
+    background: rgba(124, 58, 237, 0.8);
+}
+
+.theme-dark .nav-divider {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.theme-dark .nav-item-bottom {
+    color: #e2e8f0;
+}
+
+.theme-dark .nav-item-bottom:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.theme-dark .collapsed-nav {
+    background: #1e293b;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+}
+
+.theme-dark .expand-btn {
+    color: #e2e8f0;
+}
+
+.theme-dark .expand-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
 }
