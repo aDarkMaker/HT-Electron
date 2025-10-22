@@ -14,12 +14,14 @@
         "build/**",
         "coverage/**",
         ".gitignore",
-        "AliCloud/**"
+        "AliCloud/**",
+        "Alist/**"
     ],
     "version": "0.2",
     "words": [
         "acks",
         "Alimama",
+        "Alist",
         "Aliyun",
         "aliyundrive",
         "Balancce",
