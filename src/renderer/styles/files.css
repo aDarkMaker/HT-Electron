@@ -3,6 +3,7 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 180px);
+    position: relative;
 }
 
 @media (max-width: 768px) {
@@ -11,20 +12,308 @@
     }
 }
 
+/* 工具栏样式 */
+.file-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+    gap: 20px;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 8px;
+}
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #4a5568;
+}
+
+.toolbar-btn:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+    color: #2d3748;
+    transform: translateY(-1px);
+}
+
+.toolbar-btn:active {
+    transform: translateY(0);
+}
+
+/* 连接状态指示器 */
+.connection-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f7fafc;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #f56565;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.connected .status-dot {
+    background: #48bb78;
+    animation: none;
+}
+
+.status-indicator.connecting .status-dot {
+    background: #ed8936;
+    animation: pulse 1s infinite;
+}
+
+.status-text {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+/* Alist 容器样式 */
+.Alist-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+#alist-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    /* 确保 iframe 内容能够正常显示通知 */
+    isolation: isolate;
+    /* 隐藏滚动条 */
+    overflow: hidden;
+    /* 裁剪顶部和底部区域 */
+    clip-path: inset(60px 0 60px 0);
+    /* 调整位置 */
+    transform: translateY(-60px);
+    /* 增加高度来补偿裁剪 */
+    height: calc(100% + 120px);
+}
+
+/* 隐藏左侧工具栏 */
+#alist-iframe::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 80px;
+    background: #ffffff;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* 加载状态 */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 10;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top: 3px solid #4299e1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+.loading-overlay p {
+    color: #4a5568;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* 错误状态 */
+.error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    z-index: 10;
+}
+
+.error-content {
+    text-align: center;
+    max-width: 400px;
+    padding: 32px;
+}
+
+.error-content svg {
+    color: #f56565;
+    margin-bottom: 16px;
+}
+
+.error-content h3 {
+    color: #2d3748;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.error-content p {
+    color: #718096;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.error-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.retry-btn,
+.start-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid;
+}
+
+.retry-btn {
+    background: #4299e1;
+    color: white;
+    border-color: #4299e1;
+}
+
+.retry-btn:hover {
+    background: #3182ce;
+    border-color: #3182ce;
+}
+
+.start-btn {
+    background: #48bb78;
+    color: white;
+    border-color: #48bb78;
+}
+
+.start-btn:hover {
+    background: #38a169;
+    border-color: #38a169;
+}
+
+/* 动画 */
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 /* ==================== 深色主题 ==================== */
-.theme-dark .cloud-drive-container {
-    background: #1a202c;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+.theme-dark .file-toolbar {
+    border-bottom-color: #4a5568;
 }
 
-.theme-dark .cloud-drive-frame {
-    background: #0f1419;
-}
-
-.theme-dark .cloud-drive-placeholder h4 {
+.theme-dark .toolbar-btn {
+    background: #2d3748;
+    border-color: #4a5568;
     color: #e2e8f0;
 }
 
-.theme-dark .cloud-drive-placeholder p {
-    color: #718096;
+.theme-dark .toolbar-btn:hover {
+    background: #4a5568;
+    border-color: #718096;
+    color: #f7fafc;
+}
+
+.theme-dark .status-indicator {
+    background: #2d3748;
+}
+
+.theme-dark .status-text {
+    color: #e2e8f0;
+}
+
+.theme-dark .Alist-container {
+    background: #1a202c;
+    border-color: #4a5568;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.theme-dark .loading-overlay {
+    background: rgba(26, 32, 44, 0.95);
+}
+
+.theme-dark .loading-overlay p {
+    color: #e2e8f0;
+}
+
+.theme-dark .error-overlay {
+    background: rgba(26, 32, 44, 0.95);
+}
+
+.theme-dark .error-content h3 {
+    color: #f7fafc;
+}
+
+.theme-dark .error-content p {
+    color: #a0aec0;
+}
+
+/* 深色主题下的左侧工具栏遮罩 */
+.theme-dark #alist-iframe::after {
+    background: #1a202c;
 }

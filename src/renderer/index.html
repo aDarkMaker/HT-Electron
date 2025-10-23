@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self' http://localhost:*;"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self' http://localhost:*; connect-src 'self' http://localhost:*;"
         />
         <title>HXK Terminal</title>
         <link rel="stylesheet" href="styles/main.css" />
@@ -245,10 +245,98 @@
                             <h2>文件管理</h2>
                             <p>对，就是你，记得同步工作！！！</p>
                         </div>
+                        <div class="file-toolbar">
+                            <div class="toolbar-group">
+                                <button
+                                    id="refresh-alist-btn"
+                                    class="toolbar-btn"
+                                    title="刷新"
+                                >
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
+                                    id="open-alist-external-btn"
+                                    class="toolbar-btn"
+                                    title="在新窗口打开"
+                                >
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="connection-status">
+                                <div id="alist-status" class="status-indicator">
+                                    <div class="status-dot"></div>
+                                    <span class="status-text"
+                                        >检查连接中...</span
+                                    >
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="files-content">
                         <div id="Alist-container" class="Alist-container">
-                            <iframe src="http://localhost:5244/"></iframe>
+                            <div id="alist-loading" class="loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <p>正在加载文件管理器...</p>
+                            </div>
+                            <iframe
+                                id="alist-iframe"
+                                src="http://localhost:5244/"
+                                allowfullscreen
+                            ></iframe>
+                            <div
+                                id="alist-error"
+                                class="error-overlay"
+                                style="display: none"
+                            >
+                                <div class="error-content">
+                                    <svg
+                                        width="48"
+                                        height="48"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                        />
+                                    </svg>
+                                    <h3>连接失败</h3>
+                                    <p>
+                                        无法连接到 Alist 服务 (localhost:5244)
+                                    </p>
+                                    <div class="error-actions">
+                                        <button
+                                            id="retry-alist-btn"
+                                            class="retry-btn"
+                                        >
+                                            重试
+                                        </button>
+                                        <button
+                                            id="start-alist-btn"
+                                            class="start-btn"
+                                        >
+                                            启动 Alist
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
