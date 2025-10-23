@@ -324,10 +324,6 @@ class CalendarManager {
         this.createEventModal(event);
     }
 
-    // 删除重复的displayEventModal方法，统一使用createEventModal
-
-    // 删除旧的bindEventModalEvents和hideEventModal方法，统一在createEventModal中处理
-
     showEditEventModal(event) {
         // 隐藏详情模态框
         const modal = document.getElementById('event-detail-modal');
