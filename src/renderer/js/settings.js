@@ -261,8 +261,12 @@ class SettingsManager {
                     <input type="text" id="download-path" placeholder="点击选择下载路径" readonly value="${this.escapeHtml(this.settings.downloadPath || '')}">
                 </div>
                 <div class="setting-item">
-                    <label>阿里云盘链接</label>
-                    <input type="url" id="cloud-drive-url" placeholder="https://www.aliyundrive.com/..." value="${this.escapeHtml(this.settings.cloudDriveUrl || '')}">
+                    <label>存储签名</label>
+                    <input type="text" id="storage-signature" placeholder="Admin" value="${this.escapeHtml(this.settings.storageSignature || '')}">
+                </div>
+                <div class="setting-item">
+                    <label>存储密码</label>
+                    <input type="text" id="storage-password" placeholder="Password" value="${this.escapeHtml(this.settings.storagePassword || '')}">
                 </div>
             </div>
 
