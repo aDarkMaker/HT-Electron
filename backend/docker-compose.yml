@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+    # HXK Terminal Backend API
+    hxkt-backend:
+        build: .
+        container_name: hxkt-backend
+        ports:
+            - '8000:8000'
+        environment:
+            - DEBUG=false
+            - DATABASE_URL=postgresql://hxkt_user:hxkt_password@postgres:5432/hxkt_db
+            - SECRET_KEY=your-production-secret-key-change-this
+            - JWT_SECRET_KEY=your-production-jwt-secret-key-change-this
+            - ALIST_URL=http://alist:5244
+        volumes:
+            - ./uploads:/app/uploads
+            - ./logs:/app/logs
+        depends_on:
+            - postgres
+            - redis
+        restart: unless-stopped
+        networks:
+            - hxkt-network
+
+    # PostgreSQL 数据库
+    postgres:
+        image: postgres:15-alpine
+        container_name: hxkt-postgres
+        environment:
+            - POSTGRES_DB=hxkt_db
+            - POSTGRES_USER=hxkt_user
+            - POSTGRES_PASSWORD=hxkt_password
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+        ports:
+            - '5432:5432'
+        restart: unless-stopped
+        networks:
+            - hxkt-network
+
+    # Redis 缓存
+    redis:
+        image: redis:7-alpine
+        container_name: hxkt-redis
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+        restart: unless-stopped
+        networks:
+            - hxkt-network
+
+    # Alist 文件管理服务
+    alist:
+        image: xhofe/alist:latest
+        container_name: hxkt-alist
+        ports:
+            - '5244:5244'
+        volumes:
+            - alist_data:/opt/alist/data
+        environment:
+            - PUID=1000
+            - PGID=1000
+        restart: unless-stopped
+        networks:
+            - hxkt-network
+
+volumes:
+    postgres_data:
+    redis_data:
+    alist_data:
+
+networks:
+    hxkt-network:
+        driver: bridge
