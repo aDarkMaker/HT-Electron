@@ -16,7 +16,8 @@
         "coverage/**",
         ".gitignore",
         "AliCloud/**",
-        "Alist/**"
+        "Alist/**",
+        "backend/requirements.txt"
     ],
     "version": "0.2",
     "words": [
