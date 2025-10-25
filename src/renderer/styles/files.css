@@ -113,25 +113,6 @@
     isolation: isolate;
     /* 隐藏滚动条 */
     overflow: hidden;
-    /* 裁剪顶部和底部区域 */
-    clip-path: inset(60px 0 60px 0);
-    /* 调整位置 */
-    transform: translateY(-60px);
-    /* 增加高度来补偿裁剪 */
-    height: calc(100% + 120px);
-}
-
-/* 隐藏左侧工具栏 */
-#alist-iframe::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 80px;
-    background: #ffffff;
-    z-index: 1000;
-    pointer-events: none;
 }
 
 /* 加载状态 */
@@ -311,9 +292,4 @@
 
 .theme-dark .error-content p {
     color: #a0aec0;
-}
-
-/* 深色主题下的左侧工具栏遮罩 */
-.theme-dark #alist-iframe::after {
-    background: #1a202c;
 }
