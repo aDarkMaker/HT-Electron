@@ -1,7 +1,7 @@
 // 文件管理模块
 class FileManager {
     constructor() {
-        this.alistUrl = 'http://localhost:5244';
+        this.alistUrl = 'http://118.195.243.30:5244';
         this.isConnected = false;
         this.isLoading = true;
         this.retryCount = 0;

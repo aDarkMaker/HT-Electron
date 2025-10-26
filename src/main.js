@@ -226,7 +226,7 @@ ipcMain.on('set-theme', (event, theme) => {
     // macOS 原生支持深色模式
     if (process.platform === 'darwin') {
         // macOS 会自动处理窗口外观
-        console.log(`主题已切换为: ${theme}`);
+        // console.log(`主题已切换为: ${theme}`);
     }
 
     // Windows 可以通过设置背景色来适应主题

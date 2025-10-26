@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             http-equiv="Content-Security-Policy"
-            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self' http://localhost:*; connect-src 'self' http://localhost:*;"
+            content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self' http://localhost:* http://118.195.243.30:*; connect-src 'self' http://localhost:* http://118.195.243.30:*;"
         />
         <title>HXK Terminal</title>
         <link rel="stylesheet" href="styles/main.css" />
@@ -293,12 +293,17 @@
                     <div class="files-content">
                         <div id="Alist-container" class="Alist-container">
                             <div id="alist-loading" class="loading-overlay">
-                                <div class="loading-spinner"></div>
-                                <p>正在加载文件管理器...</p>
+                                <div class="loading-content">
+                                    <div class="loading-spinner"></div>
+                                    <p>正在连接文件服务器...</p>
+                                    <div class="loading-progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                </div>
                             </div>
                             <iframe
                                 id="alist-iframe"
-                                src="http://localhost:5244/"
+                                src="http://118.195.243.30:5244/"
                                 allowfullscreen
                             ></iframe>
                             <div
@@ -318,9 +323,7 @@
                                         />
                                     </svg>
                                     <h3>连接失败</h3>
-                                    <p>
-                                        无法连接到 Alist 服务 (localhost:5244)
-                                    </p>
+                                    <p>无法连接到 Alist 服务端</p>
                                     <div class="error-actions">
                                         <button
                                             id="retry-alist-btn"
