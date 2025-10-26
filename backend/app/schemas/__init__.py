@@ -2,7 +2,7 @@
 Pydantic数据模式定义
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field  # pyright: ignore[reportMissingImports]
 from typing import Optional, List
 from datetime import datetime
 from enum import Enum
