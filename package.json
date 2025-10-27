@@ -52,13 +52,30 @@
         },
         "files": [
             "src/**/*",
-            "assets/**/*"
+            "assets/**/*",
+            "package.json"
         ],
         "mac": {
             "category": "public.app-category.productivity"
         },
         "win": {
-            "target": "nsis"
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64",
+                        "ia32"
+                    ]
+                }
+            ],
+            "icon": "assets/icon.ico",
+            "requestedExecutionLevel": "requireAdministrator"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createDesktopShortcut": true,
+            "createStartMenuShortcut": true
         },
         "linux": {
             "target": "AppImage"
