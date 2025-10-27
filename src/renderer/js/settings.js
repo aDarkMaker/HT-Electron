@@ -24,7 +24,6 @@ class SettingsManager {
         await this.loadSettings();
         this.bindEvents();
         this.initThemeWatcher();
-        // 不再在这里初始化i18n，因为已经在app.js中初始化了
     }
 
     async loadSettings() {
@@ -45,7 +44,10 @@ class SettingsManager {
     async saveSettings() {
         try {
             if (window.Electron) {
-                await window.Electron.setStoreValue('settings', this.settings);
+                await window.electronAPI.setStoreValue(
+                    'settings',
+                    this.settings
+                );
                 console.log('设置保存成功');
             }
         } catch (error) {
@@ -81,7 +83,6 @@ class SettingsManager {
                 }
             };
 
-            // 使用标准的 addEventListener
             darkModeMediaQuery.addEventListener('change', handleThemeChange);
 
             this.darkModeMediaQuery = darkModeMediaQuery;
@@ -118,8 +119,12 @@ class SettingsManager {
 
     async selectDownloadPath() {
         try {
-            if (window.Electron && window.Electron.selectDirectory) {
-                const path = await window.Electron.selectDirectory();
+            if (
+                window.Electron &&
+                window.electronAPI &&
+                window.electronAPI.selectDirectory
+            ) {
+                const path = await window.electronAPI.selectDirectory();
                 if (path) {
                     this.settings.downloadPath = path;
                     await this.saveSettings();

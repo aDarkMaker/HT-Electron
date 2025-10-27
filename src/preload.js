@@ -1,5 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+// 暴露平台检测标志
+contextBridge.exposeInMainWorld('Electron', true);
+
 // 暴露安全的 API 给渲染进程
 contextBridge.exposeInMainWorld('electronAPI', {
     // 数据存储相关
