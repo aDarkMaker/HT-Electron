@@ -582,18 +582,21 @@ class SettingsManager {
         const html = document.documentElement;
 
         // 移除现有主题类
-        body.classList.remove('theme-light', 'theme-dark');
+        body.classList.remove('theme-light', 'theme-dark', 'dark');
         html.classList.remove('theme-light', 'theme-dark');
 
         let appliedTheme = '';
+        let isDarkMode = false;
 
         // 应用新主题
         if (this.settings.theme === 'dark') {
             appliedTheme = 'theme-dark';
-            body.classList.add('theme-dark');
+            isDarkMode = true;
+            body.classList.add('theme-dark', 'dark');
             html.classList.add('theme-dark');
         } else if (this.settings.theme === 'light') {
             appliedTheme = 'theme-light';
+            isDarkMode = false;
             body.classList.add('theme-light');
             html.classList.add('theme-light');
         } else {
@@ -602,8 +605,14 @@ class SettingsManager {
                 '(prefers-color-scheme: dark)'
             ).matches;
 
+            isDarkMode = prefersDark;
             appliedTheme = prefersDark ? 'theme-dark' : 'theme-light';
-            body.classList.add(appliedTheme);
+
+            if (prefersDark) {
+                body.classList.add('theme-dark', 'dark');
+            } else {
+                body.classList.add('theme-light');
+            }
             html.classList.add(appliedTheme);
 
             console.log(
@@ -613,8 +622,7 @@ class SettingsManager {
 
         // 通知Electron主进程主题变化（用于原生窗口标题栏等）
         if (window.electronAPI && window.electronAPI.setTheme) {
-            const isDark = appliedTheme === 'theme-dark';
-            window.electronAPI.setTheme(isDark ? 'dark' : 'light');
+            window.electronAPI.setTheme(isDarkMode ? 'dark' : 'light');
         }
     }
 

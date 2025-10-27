@@ -68,14 +68,23 @@
                     ]
                 }
             ],
-            "icon": "assets/icon.ico",
             "requestedExecutionLevel": "requireAdministrator"
         },
         "nsis": {
             "oneClick": false,
             "allowToChangeInstallationDirectory": true,
+            "allowElevation": true,
             "createDesktopShortcut": true,
-            "createStartMenuShortcut": true
+            "createStartMenuShortcut": true,
+            "guid": "com.hxk.terminal",
+            "warningsAsErrors": false,
+            "artifactName": "${productName} Setup ${version}.${ext}",
+            "runAfterFinish": true,
+            "menuCategory": "HXK Team Tools",
+            "shortcutName": "HXK Terminal",
+            "deleteAppDataOnUninstall": false,
+            "installerSidebar": "build/ui/sidebar.bmp",
+            "installerHeader": "build/ui/header.bmp"
         },
         "linux": {
             "target": "AppImage"

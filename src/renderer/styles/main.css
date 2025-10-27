@@ -48,10 +48,26 @@ body {
     overflow: hidden;
 }
 
+/* Windows 平台：预留标题栏空间 */
+body.windows {
+    padding-top: 32px;
+}
+
+/* macOS 平台：不需要预留空间 */
+body.darwin {
+    padding-top: 0;
+}
+
 #app {
     display: flex;
     height: 100vh;
     width: 100vw;
+    margin-top: 0;
+}
+
+/* 确保应用不会溢出标题栏 */
+body.windows #app {
+    height: calc(100vh - 32px);
 }
 
 /* 主内容区域 */

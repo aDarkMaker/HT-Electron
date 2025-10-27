@@ -11,11 +11,19 @@ const store = new Store();
 let mainWindow;
 
 function createWindow() {
+    // macOS 保持原生边框，Windows 使用自定义标题栏
+    const isMac = process.platform === 'darwin';
+
     mainWindow = new BrowserWindow({
         width: 1000,
         height: 600,
-        minWidth: 800,
-        minHeight: 500,
+        minWidth: 1000,
+        maxWidth: 1000,
+        minHeight: 600,
+        maxHeight: 600,
+        resizable: false, // 禁用窗口大小调整
+        frame: isMac,
+        transparent: false,
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
@@ -25,8 +33,7 @@ function createWindow() {
             webSecurity: false,
             allowRunningInsecureContent: true
         },
-        icon: join(__dirname, '../assets/icon.png'),
-        titleBarStyle: 'default',
+        // icon: join(__dirname, '../assets/icon.png'),
         show: false,
         backgroundColor: '#F5F5F5'
     });
@@ -46,6 +53,21 @@ function createWindow() {
     mainWindow.on('closed', () => {
         mainWindow = null;
     });
+
+    // 在 macOS 上禁用全屏功能
+    if (process.platform === 'darwin') {
+        mainWindow.on('maximize', () => {
+            mainWindow.restore();
+        });
+
+        mainWindow.on('move', () => {
+            // 如果窗口被移动到屏幕边缘（macOS 全屏触发），恢复到原大小
+            const bounds = mainWindow.getBounds();
+            if (bounds.width !== 1000 || bounds.height !== 600) {
+                mainWindow.setBounds({ width: 1000, height: 600 });
+            }
+        });
+    }
 
     // 设置菜单
     createMenu();
@@ -261,6 +283,28 @@ app.on('web-contents-created', (event, contents) => {
             shell.openExternal(navigationUrl);
         });
     });
+});
+
+// 窗口控制 IPC 处理器
+ipcMain.handle('minimize-window', () => {
+    mainWindow.minimize();
+});
+
+ipcMain.handle('maximize-window', () => {
+    if (mainWindow.isMaximized()) {
+        mainWindow.unmaximize();
+    } else {
+        mainWindow.maximize();
+    }
+    return mainWindow.isMaximized();
+});
+
+ipcMain.handle('close-window', () => {
+    mainWindow.close();
+});
+
+ipcMain.handle('is-maximized', () => {
+    return mainWindow.isMaximized();
 });
 
 // TODO: 网盘挂载

@@ -26,5 +26,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onMenuAbout: (callback) => {
         ipcRenderer.on('menu-about', callback);
         return () => ipcRenderer.removeListener('menu-about', callback);
+    },
+
+    // 窗口控制
+    minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+    maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
+    closeWindow: () => ipcRenderer.invoke('close-window'),
+    isMaximized: () => ipcRenderer.invoke('is-maximized'),
+
+    // 监听窗口状态变化
+    onWindowMaximized: (callback) => {
+        ipcRenderer.on('window-maximized', (_, isMaximized) =>
+            callback(isMaximized)
+        );
+        return () => ipcRenderer.removeListener('window-maximized', callback);
     }
 });

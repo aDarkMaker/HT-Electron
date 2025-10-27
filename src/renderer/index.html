@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="styles/settings.css" />
         <link rel="stylesheet" href="styles/files.css" />
         <link rel="stylesheet" href="styles/custom-select.css" />
+        <link rel="stylesheet" href="styles/titlebar.css" />
         <style>
             @font-face {
                 font-family: 'AlimamaShuHeiTi-Bold';
@@ -26,6 +27,37 @@
         </style>
     </head>
     <body>
+        <!-- 自定义标题栏（仅 Windows 显示） -->
+        <div id="custom-titlebar" class="custom-titlebar">
+            <div class="titlebar-title">HXK Terminal</div>
+            <div class="titlebar-controls">
+                <button
+                    id="minimize-btn"
+                    class="titlebar-btn minimize-btn"
+                    title="最小化"
+                >
+                    <img
+                        src="Assets/Icons/minus-circle.svg"
+                        width="16"
+                        height="16"
+                        alt="最小化"
+                    />
+                </button>
+                <button
+                    id="close-btn"
+                    class="titlebar-btn close-btn"
+                    title="关闭"
+                >
+                    <img
+                        src="Assets/Icons/close-circle.svg"
+                        width="16"
+                        height="16"
+                        alt="关闭"
+                    />
+                </button>
+            </div>
+        </div>
+
         <div id="app">
             <!-- 导航栏 -->
             <nav id="navigation-bar" class="navigation-bar">
@@ -755,6 +787,7 @@
             </div>
         </div>
 
+        <script type="module" src="js/titlebar.js"></script>
         <script type="module" src="js/custom-select.js"></script>
         <script type="module" src="i18n/i18n.js"></script>
         <script type="module" src="js/app.js"></script>

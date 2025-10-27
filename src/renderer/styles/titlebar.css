@@ -1,0 +1,166 @@
+/* 自定义标题栏样式 */
+
+/* Windows 平台样式 */
+body.windows .custom-titlebar {
+    display: flex;
+}
+
+/* macOS 平台样式 - 使用原生的标题栏 */
+body.darwin .custom-titlebar {
+    display: none;
+}
+
+/* 浅色主题 */
+body:not(.dark) .custom-titlebar {
+    background: linear-gradient(to bottom, #f6f6f6, #e8e8e8);
+    border-bottom: 1px solid #d0d0d0;
+}
+
+body:not(.dark) .titlebar-title {
+    color: #333;
+}
+
+body:not(.dark) .titlebar-btn {
+    color: #666;
+}
+
+body:not(.dark) .titlebar-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body:not(.dark) .titlebar-btn:active {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+body:not(.dark) .close-btn:hover {
+    background: #e81123;
+    color: white;
+}
+
+/* 深色主题 */
+body.dark .custom-titlebar {
+    background: linear-gradient(to bottom, #2d2d2d, #1d1d1d);
+    border-bottom: 1px solid #404040;
+}
+
+body.dark .titlebar-title {
+    color: #e0e0e0;
+}
+
+body.dark .titlebar-btn {
+    color: #b0b0b0;
+}
+
+body.dark .titlebar-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark .titlebar-btn:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+body.dark .close-btn:hover {
+    background: #e81123;
+    color: white;
+}
+
+/* 标题栏容器 */
+.custom-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 32px;
+    -webkit-app-region: drag;
+    user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+/* 标题区域 */
+.titlebar-title {
+    padding-left: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    -webkit-app-region: no-drag;
+    font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, sans-serif;
+}
+
+/* 控制按钮区域 */
+.titlebar-controls {
+    display: flex;
+    height: 100%;
+    -webkit-app-region: no-drag;
+}
+
+/* 控制按钮通用样式 */
+.titlebar-btn {
+    width: 46px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    outline: none;
+}
+
+.titlebar-btn:focus {
+    outline: none;
+}
+
+/* 按钮图标 */
+.titlebar-btn img {
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+/* 深色主题下的图标样式 */
+body.dark .titlebar-btn img {
+    filter: invert(0.9);
+}
+
+body.dark .close-btn:hover {
+    background: #e81123;
+}
+
+body.dark .close-btn:hover img {
+    filter: invert(1) brightness(1.2);
+}
+
+/* 浅色主题下的关闭按钮悬停 */
+body:not(.dark) .close-btn:hover {
+    background: #e81123;
+}
+
+body:not(.dark) .close-btn:hover img {
+    filter: brightness(1.2);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .custom-titlebar {
+        height: 36px;
+    }
+
+    .titlebar-btn {
+        width: 52px;
+    }
+}
+
+/* Windows 平台检测 */
+body:not(.darwin) .custom-titlebar {
+    display: flex;
+}
