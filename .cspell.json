@@ -20,7 +20,8 @@
         "backend/requirements.txt",
         "backend/pyproject.toml",
         "backend/README.md",
-        "backend/start.sh"
+        "backend/start.sh",
+        "backend/start.bat"
     ],
     "version": "0.2",
     "words": [
