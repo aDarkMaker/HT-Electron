@@ -53,10 +53,12 @@
         "files": [
             "src/**/*",
             "assets/**/*",
+            "build/icon/**/*",
             "package.json"
         ],
         "mac": {
-            "category": "public.app-category.productivity"
+            "category": "public.app-category.productivity",
+            "icon": "build/icon/icon.icns"
         },
         "win": {
             "target": [
@@ -68,6 +70,7 @@
                     ]
                 }
             ],
+            "icon": "build/icon/icon.ico",
             "requestedExecutionLevel": "requireAdministrator"
         },
         "nsis": {
@@ -87,7 +90,8 @@
             "installerHeader": "build/ui/header.bmp"
         },
         "linux": {
-            "target": "AppImage"
+            "target": "AppImage",
+            "icon": "build/icon/icon.png"
         }
     }
 }

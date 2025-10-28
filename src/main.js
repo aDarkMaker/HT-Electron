@@ -33,7 +33,7 @@ function createWindow() {
             webSecurity: false,
             allowRunningInsecureContent: true
         },
-        // icon: join(__dirname, '../assets/icon.png'),
+        icon: join(__dirname, '../build/icon/icon.png'),
         show: false,
         backgroundColor: '#F5F5F5'
     });
