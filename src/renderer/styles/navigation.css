@@ -21,6 +21,13 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    transition: top 0.2s ease;
+}
+
+/* Windows 平台：导航栏需要下移，避免与标题栏重叠 */
+body.windows .navigation-bar {
+    top: 32px;
+    height: calc(100vh - 32px);
 }
 
 /* 展开状态导航栏 */
@@ -203,6 +210,12 @@
     opacity: 0;
     pointer-events: none;
     transform: translateX(-20px);
+    z-index: 101;
+}
+
+/* Windows 平台：折叠按钮需要下移 */
+body.windows .collapsed-nav {
+    top: 52px;
 }
 
 .collapsed-nav.visible {
