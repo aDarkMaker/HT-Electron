@@ -15,10 +15,10 @@ function createWindow() {
     const isMac = process.platform === 'darwin';
 
     mainWindow = new BrowserWindow({
-        width: 1000,
+        width: 760,
         height: 600,
-        minWidth: 1000,
-        maxWidth: 1000,
+        minWidth: 760,
+        maxWidth: 760,
         minHeight: 600,
         maxHeight: 600,
         resizable: false, // 禁用窗口大小调整
