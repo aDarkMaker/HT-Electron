@@ -22,6 +22,20 @@ class FileManager {
             refreshBtn.addEventListener('click', () => this.refreshAlist());
         }
 
+        // 上传文件按钮
+        const uploadBtn = document.getElementById('upload-file-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', () => this.uploadFile());
+        }
+
+        // 新建文件夹按钮
+        const createFolderBtn = document.getElementById('create-folder-btn');
+        if (createFolderBtn) {
+            createFolderBtn.addEventListener('click', () =>
+                this.createFolder()
+            );
+        }
+
         // 在新窗口打开按钮
         const externalBtn = document.getElementById('open-alist-external-btn');
         if (externalBtn) {
@@ -40,6 +54,14 @@ class FileManager {
         const startBtn = document.getElementById('start-alist-btn');
         if (startBtn) {
             startBtn.addEventListener('click', () => this.startAlist());
+        }
+
+        // 文件选择器变化事件
+        const fileInput = document.getElementById('file-upload-input');
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) =>
+                this.handleFileSelect(e)
+            );
         }
     }
 
@@ -238,6 +260,146 @@ class FileManager {
         alert(
             '请手动启动 Alist 服务：\n\n1. 打开终端\n2. 进入 Alist 目录\n3. 运行: ./alist server'
         );
+    }
+
+    uploadFile() {
+        // 触发文件选择
+        const fileInput = document.getElementById('file-upload-input');
+        if (fileInput) {
+            fileInput.click();
+        }
+    }
+
+    async handleFileSelect(event) {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        try {
+            // 获取当前路径（从 iframe URL 中提取）
+            const iframe = document.getElementById('alist-iframe');
+            if (!iframe) return;
+
+            const currentPath = await this.getCurrentPath(iframe);
+
+            // 上传每个文件
+            for (let i = 0; i < files.length; i++) {
+                await this.uploadFileToAlist(files[i], currentPath);
+            }
+
+            // 刷新页面
+            this.refreshAlist();
+
+            // 清空文件选择器
+            event.target.value = '';
+        } catch (error) {
+            console.error('上传文件失败:', error);
+            alert('上传文件失败，请重试');
+        }
+    }
+
+    async getCurrentPath(iframe) {
+        try {
+            // 尝试从 iframe 获取当前路径
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow && iframeWindow.location) {
+                const url = iframeWindow.location.href;
+                // 提取路径部分
+                const match = url.match(/\/d\/(.*)$/);
+                return match ? match[1] : '';
+            }
+        } catch (error) {
+            console.log('无法获取当前路径:', error);
+        }
+        return '';
+    }
+
+    async uploadFileToAlist(file, path) {
+        try {
+            // 获取上传目录路径
+            let uploadPath = '/';
+            if (path) {
+                // 解码路径（因为从 URL 中提取的是编码后的）
+                uploadPath = '/' + decodeURIComponent(path);
+            }
+
+            // 创建 FormData
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('path', uploadPath);
+
+            // 发送上传请求到 Alist API
+            const response = await fetch(`${this.alistUrl}/api/fs/put`, {
+                method: 'PUT',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(
+                    errorData.message || `上传失败: ${response.status}`
+                );
+            }
+
+            console.log(`文件 ${file.name} 上传成功`);
+        } catch (error) {
+            console.error(`上传 ${file.name} 失败:`, error);
+            throw error;
+        }
+    }
+
+    createFolder() {
+        // 提示用户输入文件夹名称
+        const folderName = prompt('请输入文件夹名称：');
+        if (!folderName || folderName.trim() === '') {
+            return;
+        }
+
+        this.createFolderInAlist(folderName.trim());
+    }
+
+    async createFolderInAlist(folderName) {
+        try {
+            const iframe = document.getElementById('alist-iframe');
+            if (!iframe) return;
+
+            const currentPath = await this.getCurrentPath(iframe);
+
+            // 构建完整路径
+            let fullPath = '/';
+            if (currentPath) {
+                // 解码路径
+                fullPath =
+                    '/' + decodeURIComponent(currentPath) + '/' + folderName;
+            } else {
+                fullPath = '/' + folderName;
+            }
+
+            // 准备请求数据
+            const body = {
+                path: fullPath
+            };
+
+            // 发送创建文件夹请求到 Alist API
+            const response = await fetch(`${this.alistUrl}/api/fs/mkdir`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || '创建文件夹失败');
+            }
+
+            console.log(`文件夹 ${folderName} 创建成功`);
+            // 刷新页面
+            this.refreshAlist();
+        } catch (error) {
+            console.error('创建文件夹失败:', error);
+            alert('创建文件夹失败: ' + error.message);
+        }
     }
 
     // 监听视图切换

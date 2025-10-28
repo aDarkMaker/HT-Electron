@@ -296,6 +296,38 @@
                                     </svg>
                                 </button>
                                 <button
+                                    id="upload-file-btn"
+                                    class="toolbar-btn"
+                                    title="上传文件"
+                                >
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
+                                    id="create-folder-btn"
+                                    class="toolbar-btn"
+                                    title="新建文件夹"
+                                >
+                                    <svg
+                                        width="16"
+                                        height="16"
+                                        viewBox="0 0 24 24"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2zm2 6h6v2h-6v-2zm0 4h6v2h-6v-2zm-4-4h2v-2H8v2zm0 4h2v-2H8v2z"
+                                        />
+                                    </svg>
+                                </button>
+                                <button
                                     id="open-alist-external-btn"
                                     class="toolbar-btn"
                                     title="在新窗口打开"
@@ -311,6 +343,13 @@
                                         />
                                     </svg>
                                 </button>
+                                <!-- 隐藏的文件选择器 -->
+                                <input
+                                    type="file"
+                                    id="file-upload-input"
+                                    multiple
+                                    style="display: none"
+                                />
                             </div>
                             <div class="connection-status">
                                 <div id="alist-status" class="status-indicator">
