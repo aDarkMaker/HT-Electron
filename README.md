@@ -24,15 +24,15 @@ pnpm install
 # 开发模式
 pnpm dev
 
-# 生产模式
+# 预览模式
 pnpm start
 ```
 
 ### 构建
 
 ```bash
-# 构建所有平台
-pnpm build
+# 构建 Win 和 Mac 平台
+bash build.sh
 
 # 构建 Windows
 pnpm build:win
