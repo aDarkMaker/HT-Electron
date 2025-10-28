@@ -116,6 +116,7 @@ export const zhCN = {
         userAvatar: '用户头像',
         appSettings: '应用设置',
         desktopNotifications: '桌面通知',
+        autoSave: '自动保存',
         showCompletedTasks: '显示已完成任务',
         about: '关于',
         version: '版本',
