@@ -225,8 +225,8 @@
 }
 
 .auth-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .auth-button:active {
@@ -378,9 +378,9 @@
 }
 
 .theme-dark .form-group-auth input:focus {
-    background: #374151;
-    border-color: #8b5cf6;
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+    background: #475569;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .theme-dark .form-group-auth input::placeholder {
@@ -389,6 +389,19 @@
 
 .theme-dark .auth-switch-text {
     color: #cbd5e0;
+}
+
+.theme-dark .auth-button {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
+}
+
+.theme-dark .auth-button:hover {
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.5);
+}
+
+.theme-dark .auth-button:active {
+    transform: translateY(0);
 }
 
 /* 响应式设计 */
