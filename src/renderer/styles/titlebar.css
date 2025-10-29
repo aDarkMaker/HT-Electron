@@ -32,11 +32,6 @@ body:not(.dark) .titlebar-btn:active {
     background: rgba(0, 0, 0, 0.1);
 }
 
-body:not(.dark) .close-btn:hover {
-    background: #f42c2c;
-    color: white;
-}
-
 /* 深色主题 */
 body.dark .custom-titlebar {
     background: linear-gradient(to bottom, #2d2d2d, #1d1d1d);
@@ -57,11 +52,6 @@ body.dark .titlebar-btn:hover {
 
 body.dark .titlebar-btn:active {
     background: rgba(255, 255, 255, 0.15);
-}
-
-body.dark .close-btn:hover {
-    background: #f42c2c;
-    color: white;
 }
 
 /* 标题栏容器 */
@@ -156,46 +146,6 @@ body.dark .close-btn:hover {
 /* 深色主题下的图标样式 */
 body.dark .titlebar-btn img {
     filter: invert(0.9);
-}
-
-/* 关闭按钮特殊样式 */
-.close-btn {
-    position: relative;
-}
-
-.close-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0px;
-    height: 0px;
-    border-radius: 50%;
-    background: #f42c2c;
-    transform: translate(-50%, -50%);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 0;
-}
-
-.close-btn:hover::after {
-    width: 28px;
-    height: 28px;
-}
-
-/* 关闭按钮图标样式 */
-.close-btn img {
-    position: relative;
-    z-index: 1;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 悬停时图标变为白色 */
-body:not(.dark) .close-btn:hover img {
-    filter: brightness(0) invert(1);
-}
-
-body.dark .close-btn:hover img {
-    filter: brightness(0) invert(1);
 }
 
 /* 响应式调整 */
