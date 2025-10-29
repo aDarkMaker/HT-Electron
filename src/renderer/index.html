@@ -16,6 +16,7 @@
         <link rel="stylesheet" href="styles/files.css" />
         <link rel="stylesheet" href="styles/custom-select.css" />
         <link rel="stylesheet" href="styles/titlebar.css" />
+        <link rel="stylesheet" href="styles/auth.css" />
         <style>
             @font-face {
                 font-family: 'AlimamaShuHeiTi-Bold';
@@ -27,6 +28,101 @@
         </style>
     </head>
     <body>
+        <!-- 认证页面容器 -->
+        <div id="auth-container" class="auth-container">
+            <div class="auth-box">
+                <div class="auth-header">
+                    <div class="auth-header-content">
+                        <div class="auth-logo">HXK Terminal</div>
+                        <div class="auth-title">欢迎回来</div>
+                        <div class="auth-subtitle">登录您的账号以继续</div>
+                    </div>
+                </div>
+
+                <!-- 登录表单 -->
+                <div id="login-container">
+                    <div id="login-error" class="auth-error"></div>
+                    <div id="login-success" class="auth-success"></div>
+                    <form id="login-form" class="auth-form">
+                        <div class="form-group-auth">
+                            <label for="login-username">用户名</label>
+                            <input
+                                type="text"
+                                id="login-username"
+                                placeholder="请输入用户名"
+                                required
+                            />
+                        </div>
+                        <div class="form-group-auth">
+                            <label for="login-password">密码</label>
+                            <input
+                                type="password"
+                                id="login-password"
+                                placeholder="请输入密码"
+                                required
+                            />
+                        </div>
+                        <button type="submit" class="auth-button">登录</button>
+                    </form>
+                </div>
+
+                <!-- 注册表单 -->
+                <div id="register-container" style="display: none">
+                    <div id="register-error" class="auth-error"></div>
+                    <div id="register-success" class="auth-success"></div>
+                    <form id="register-form" class="auth-form">
+                        <div class="form-group-auth">
+                            <label for="register-username">用户名</label>
+                            <input
+                                type="text"
+                                id="register-username"
+                                placeholder="请输入用户名"
+                                required
+                            />
+                        </div>
+                        <div class="form-group-auth">
+                            <label for="register-password">密码</label>
+                            <input
+                                type="password"
+                                id="register-password"
+                                placeholder="请输入密码（至少6位）"
+                                required
+                            />
+                        </div>
+                        <div class="form-group-auth">
+                            <label for="register-confirm-password"
+                                >确认密码</label
+                            >
+                            <input
+                                type="password"
+                                id="register-confirm-password"
+                                placeholder="请再次输入密码"
+                                required
+                            />
+                        </div>
+                        <div class="form-group-auth">
+                            <label for="register-qq">QQ号</label>
+                            <input
+                                type="text"
+                                id="register-qq"
+                                placeholder="请输入QQ号"
+                                required
+                            />
+                        </div>
+                        <button type="submit" class="auth-button">注册</button>
+                    </form>
+                </div>
+
+                <!-- 切换链接 -->
+                <div class="auth-switch">
+                    <span id="auth-switch-text">还没有账号？</span>
+                    <a href="#" id="auth-switch-link" class="auth-switch-link"
+                        >立即注册</a
+                    >
+                </div>
+            </div>
+        </div>
+
         <!-- 自定义标题栏（仅 Windows 显示） -->
         <div id="custom-titlebar" class="custom-titlebar">
             <div class="titlebar-title">HXK Terminal</div>
@@ -829,6 +925,7 @@
         <script type="module" src="js/titlebar.js"></script>
         <script type="module" src="js/custom-select.js"></script>
         <script type="module" src="i18n/i18n.js"></script>
+        <script type="module" src="js/auth.js"></script>
         <script type="module" src="js/app.js"></script>
         <script type="module" src="js/navigation.js"></script>
         <script type="module" src="js/task.js"></script>

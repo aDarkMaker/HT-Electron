@@ -5,6 +5,7 @@ import { CalendarManager } from './calendar.js';
 import { SettingsManager } from './settings.js';
 import { initCustomSelects } from './custom-select.js';
 import { i18n } from '../i18n/i18n.js';
+import { AuthManager } from './auth.js';
 
 // 主应用类
 class HXKTerminalApp {
@@ -14,12 +15,31 @@ class HXKTerminalApp {
         this.tasks = [];
         this.myTasks = [];
         this.calendarEvents = [];
+        this.authManager = null;
+        this.eventsBound = false;
 
         this.init();
     }
 
     async init() {
         console.log('🚀 HXK Terminal 应用启动中...');
+
+        // 首先初始化认证管理器
+        this.authManager = new AuthManager(this);
+        await this.authManager.init();
+
+        // 如果未登录，不初始化其他模块
+        if (!this.authManager.isUserAuthenticated()) {
+            console.log('⚠️ 用户未登录，等待登录...');
+            return;
+        }
+
+        // 如果已登录，初始化其他模块
+        await this.initializeAuthenticatedUser();
+    }
+
+    async initializeAuthenticatedUser() {
+        console.log('✅ 用户已登录，开始初始化应用...');
 
         // 首先初始化国际化（只初始化一次）
         if (!i18n.getCurrentLanguage()) {
@@ -46,6 +66,12 @@ class HXKTerminalApp {
     }
 
     bindEvents() {
+        // 防止重复绑定事件监听器
+        if (this.eventsBound) {
+            console.warn('⚠️ 事件监听器已绑定，跳过重复绑定');
+            return;
+        }
+
         // 导航事件
         document.addEventListener('navigate', (event) => {
             this.navigateToView(event.detail.view);
@@ -53,7 +79,9 @@ class HXKTerminalApp {
 
         // 任务事件
         document.addEventListener('task-published', (event) => {
-            this.taskManager.addTask(event.detail.task);
+            if (this.taskManager) {
+                this.taskManager.addTask(event.detail.task);
+            }
         });
 
         // 移除重复的事件监听器，避免重复接取任务
@@ -72,13 +100,29 @@ class HXKTerminalApp {
 
         // 设置事件
         document.addEventListener('settings-changed', (event) => {
-            this.settingsManager.updateSettings(event.detail.settings);
+            if (this.settingsManager) {
+                this.settingsManager.updateSettings(event.detail.settings);
+            }
         });
+
+        // 登出事件 - 直接绑定到按钮上，避免重复绑定
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn && !logoutBtn.hasAttribute('data-logout-bound')) {
+            logoutBtn.setAttribute('data-logout-bound', 'true');
+            logoutBtn.addEventListener('click', async () => {
+                if (confirm('确定要登出吗？')) {
+                    await this.logout();
+                }
+            });
+        }
 
         // 键盘快捷键
         document.addEventListener('keydown', (event) => {
             this.handleKeyboardShortcuts(event);
         });
+
+        this.eventsBound = true;
+        console.log('✅ 事件监听器绑定完成');
     }
 
     async loadData() {
@@ -223,14 +267,17 @@ class HXKTerminalApp {
         // 更新任务计数
         this.updateTaskCounts();
 
-        // 初始化导航栏状态
-        this.navigation.updateNavigationState();
+        // 初始化导航栏状态（需要检查 navigation 是否存在）
+        if (this.navigation) {
+            this.navigation.updateNavigationState();
+            // 确保导航栏也更新用户信息
+            this.navigation.updateUserInfo();
+        }
 
         // 更新用户显示（包括头像和用户名）
-        this.settingsManager.updateUserDisplay();
-
-        // 确保导航栏也更新用户信息
-        this.navigation.updateUserInfo();
+        if (this.settingsManager) {
+            this.settingsManager.updateUserDisplay();
+        }
 
         // 初始化自定义下拉框
         initCustomSelects();
@@ -257,21 +304,29 @@ class HXKTerminalApp {
         }
 
         // 更新导航状态
-        this.navigation.updateActiveNavItem(viewName);
+        if (this.navigation && this.navigation.updateActiveNavItem) {
+            this.navigation.updateActiveNavItem(viewName);
+        }
 
         // 根据视图执行特定逻辑
         switch (viewName) {
             case 'tasks':
                 console.log('切换到任务视图，开始渲染任务');
-                this.taskManager.renderTasks();
+                if (this.taskManager) {
+                    this.taskManager.renderTasks();
+                }
                 break;
             case 'calendar':
-                this.calendarManager.renderCalendar();
+                if (this.calendarManager) {
+                    this.calendarManager.renderCalendar();
+                }
                 break;
             case 'settings':
-                this.settingsManager.renderSettings();
-                // 重新初始化下拉框（因为渲染settings会重新生成HTML）
-                setTimeout(() => initCustomSelects(), 0);
+                if (this.settingsManager) {
+                    this.settingsManager.renderSettings();
+                    // 重新初始化下拉框（因为渲染settings会重新生成HTML）
+                    setTimeout(() => initCustomSelects(), 0);
+                }
                 break;
         }
     }
@@ -352,6 +407,17 @@ class HXKTerminalApp {
 
     // 获取当前用户信息
     getCurrentUser() {
+        // 优先从authManager获取用户信息
+        if (this.authManager && this.authManager.isUserAuthenticated()) {
+            const authUser = this.authManager.getCurrentUser();
+            return {
+                name: authUser?.username || '用户',
+                avatar: 'Assets/Icons/user.svg',
+                role: authUser?.role || 'member'
+            };
+        }
+
+        // 如果没有认证信息，尝试从设置中获取
         const settings = this.settingsManager
             ? this.settingsManager.getSettings()
             : {};
@@ -360,6 +426,13 @@ class HXKTerminalApp {
             avatar: settings.avatar || 'Assets/Icons/user.svg',
             role: 'member'
         };
+    }
+
+    // 登出
+    async logout() {
+        if (this.authManager) {
+            await this.authManager.logout();
+        }
     }
 
     // 显示通知

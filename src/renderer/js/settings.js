@@ -447,10 +447,21 @@ class SettingsManager {
     }
 
     updateUserDisplay() {
+        // 优先从authManager获取用户名
+        let displayName = this.settings.username;
+        if (
+            this.app &&
+            this.app.authManager &&
+            this.app.authManager.isUserAuthenticated()
+        ) {
+            const authUser = this.app.authManager.getCurrentUser();
+            displayName = authUser?.username || this.settings.username;
+        }
+
         // 更新用户名
         const userNameElement = document.getElementById('user-name');
         if (userNameElement) {
-            userNameElement.textContent = this.settings.username;
+            userNameElement.textContent = displayName;
         }
 
         // 更新导航栏头像

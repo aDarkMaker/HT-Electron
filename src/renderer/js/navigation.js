@@ -4,6 +4,7 @@ class NavigationManager {
         this.app = app;
         this.isExpanded = true;
         this.currentView = 'home';
+        this.eventsBound = false;
 
         this.init();
     }
@@ -14,6 +15,11 @@ class NavigationManager {
     }
 
     bindEvents() {
+        // 防止重复绑定
+        if (this.eventsBound) {
+            return;
+        }
+
         // 导航栏切换按钮
         const collapseBtn = document.getElementById('collapse-btn');
         const expandBtn = document.getElementById('expand-btn');
@@ -30,9 +36,24 @@ class NavigationManager {
             });
         }
 
-        // 导航项点击事件
-        document.querySelectorAll('.nav-item').forEach((item) => {
-            item.addEventListener('click', (event) => {
+        // 导航项点击事件 - 直接绑定，但只在元素上绑定一次
+        this.bindNavigationItems();
+
+        // 用户信息更新
+        this.updateUserInfo();
+
+        this.eventsBound = true;
+    }
+
+    bindNavigationItems() {
+        // 导航菜单项
+        const navItems = document.querySelectorAll('.nav-item[data-view]');
+        navItems.forEach((item) => {
+            // 移除旧的监听器（如果存在）
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            // 绑定新的监听器
+            newItem.addEventListener('click', (event) => {
                 const view = event.currentTarget.dataset.view;
                 if (view) {
                     this.navigateToView(view);
@@ -40,24 +61,20 @@ class NavigationManager {
             });
         });
 
-        // 设置按钮
-        const settingsBtn = document.querySelector('[data-view="settings"]');
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => {
-                this.navigateToView('settings');
+        // 底部导航项（设置和登出按钮在app.js中处理）
+        const navItemBottoms = document.querySelectorAll(
+            '.nav-item-bottom[data-view]'
+        );
+        navItemBottoms.forEach((item) => {
+            const newItem = item.cloneNode(true);
+            item.parentNode.replaceChild(newItem, item);
+            newItem.addEventListener('click', (event) => {
+                const view = event.currentTarget.dataset.view;
+                if (view) {
+                    this.navigateToView(view);
+                }
             });
-        }
-
-        // 登出按钮
-        const logoutBtn = document.getElementById('logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', () => {
-                this.handleLogout();
-            });
-        }
-
-        // 用户信息更新
-        this.updateUserInfo();
+        });
     }
 
     toggleNavigation() {
