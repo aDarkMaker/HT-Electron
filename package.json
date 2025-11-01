@@ -12,7 +12,9 @@
         "build:mac": "electron-builder --mac",
         "test": "echo \"Error: no test specified\" && exit 1",
         "spellcheck": "cspell 'src/**/*.{ts,js,html}' -c .cspell.json",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "commit": "cz",
+        "cz": "cz"
     },
     "keywords": [
         "electron",
@@ -46,6 +48,14 @@
         "**/*": "prettier --write --ignore-unknown",
         "*.js": "eslint --cache --fix",
         "*.{js,css,md}": "prettier --write"
+    },
+    "config": {
+        "commitizen": {
+            "path": "node_modules/cz-customizable"
+        },
+        "cz-customizable": {
+            "config": ".cz-config.cjs"
+        }
     },
     "build": {
         "appId": "com.hxk.terminal",
