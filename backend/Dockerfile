@@ -10,18 +10,27 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# 配置 APT 使用阿里云镜像（国内服务器加速）
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list.d/debian.sources || \
+    sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list || true
+
 # 安装系统依赖
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     libpq-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+# 配置 pip 使用清华镜像（可选，加速 Python 包安装）
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple || true
 
 # 复制依赖文件
 COPY requirements.txt .
 
-# 安装Python依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# 安装Python依赖（使用国内镜像源）
+RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple || \
+    pip install --no-cache-dir -r requirements.txt
 
 # 复制应用代码
 COPY . .

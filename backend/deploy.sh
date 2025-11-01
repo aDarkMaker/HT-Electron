@@ -110,11 +110,121 @@ check_env() {
     fi
 }
 
-# 构建镜像
+# 配置Docker镜像加速器
+setup_docker_mirror() {
+    print_message "检查Docker镜像加速器配置..."
+    
+    DOCKER_DAEMON_FILE="/etc/docker/daemon.json"
+    
+    # 检查是否已配置镜像加速器
+    if [ -f "$DOCKER_DAEMON_FILE" ] && grep -q "registry-mirrors" "$DOCKER_DAEMON_FILE"; then
+        print_message "Docker镜像加速器已配置"
+        return 0
+    fi
+    
+    print_warning "未检测到Docker镜像加速器配置"
+    print_warning "建议配置国内镜像源以加速镜像拉取"
+    print_warning "可以手动执行以下命令配置："
+    echo ""
+    echo "sudo mkdir -p /etc/docker"
+    echo "sudo tee /etc/docker/daemon.json > /dev/null <<EOF"
+    echo "{"
+    echo "  \"registry-mirrors\": ["
+    echo "    \"https://docker.mirrors.ustc.edu.cn\","
+    echo "    \"https://hub-mirror.c.163.com\","
+    echo "    \"https://mirror.baidubce.com\""
+    echo "  ]"
+    echo "}"
+    echo "EOF"
+    echo "sudo systemctl daemon-reload"
+    echo "sudo systemctl restart docker"
+    echo ""
+    
+    read -p "是否现在配置Docker镜像加速器？(y/N): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        print_message "配置Docker镜像加速器..."
+        
+        # 备份现有配置
+        if [ -f "$DOCKER_DAEMON_FILE" ]; then
+            sudo cp "$DOCKER_DAEMON_FILE" "${DOCKER_DAEMON_FILE}.backup.$(date +%Y%m%d_%H%M%S)"
+        fi
+        
+        # 创建配置目录
+        sudo mkdir -p /etc/docker
+        
+        # 写入镜像加速器配置
+        sudo tee "$DOCKER_DAEMON_FILE" > /dev/null <<EOF
+{
+  "registry-mirrors": [
+    "https://docker.mirrors.ustc.edu.cn",
+    "https://hub-mirror.c.163.com",
+    "https://mirror.baidubce.com"
+  ],
+  "max-concurrent-downloads": 10,
+  "max-concurrent-uploads": 5
+}
+EOF
+        
+        print_message "重启Docker服务..."
+        sudo systemctl daemon-reload
+        sudo systemctl restart docker
+        sleep 3
+        
+        print_message "✅ Docker镜像加速器配置完成"
+        return 0
+    else
+        print_warning "跳过镜像加速器配置，继续构建..."
+        return 1
+    fi
+}
+
+# 构建镜像（带重试机制）
 build_image() {
     print_message "构建Docker镜像..."
-    docker_cmd docker-compose build --no-cache
-    print_message "镜像构建完成"
+    
+    MAX_RETRIES=3
+    RETRY_COUNT=0
+    
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        if docker_cmd docker-compose build --no-cache 2>&1 | tee /tmp/docker-build.log; then
+            print_message "镜像构建完成"
+            return 0
+        else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            
+            # 检查是否是网络错误
+            if grep -q "timeout\|connection\|network" /tmp/docker-build.log; then
+                print_warning "构建失败（可能是网络问题），正在重试... ($RETRY_COUNT/$MAX_RETRIES)"
+                
+                if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                    sleep 5
+                    continue
+                else
+                    print_error "构建失败：网络连接超时"
+                    print_error "请检查网络连接，或配置Docker镜像加速器"
+                    print_error "运行以下命令配置镜像加速器："
+                    echo ""
+                    echo "sudo mkdir -p /etc/docker"
+                    echo "sudo tee /etc/docker/daemon.json > /dev/null <<'EOF'"
+                    echo "{"
+                    echo "  \"registry-mirrors\": ["
+                    echo "    \"https://docker.mirrors.ustc.edu.cn\","
+                    echo "    \"https://hub-mirror.c.163.com\""
+                    echo "  ]"
+                    echo "}"
+                    echo "EOF"
+                    echo "sudo systemctl daemon-reload"
+                    echo "sudo systemctl restart docker"
+                    echo ""
+                    return 1
+                fi
+            else
+                print_error "构建失败，请查看上方错误信息"
+                return 1
+            fi
+        fi
+    done
 }
 
 # 启动服务
@@ -175,8 +285,18 @@ main() {
     
     NEED_SUDO=0  # 初始化变量
     check_docker
+    
+    # 可选：配置镜像加速器
+    setup_docker_mirror
+    
     check_env
-    build_image
+    
+    # 构建镜像
+    if ! build_image; then
+        print_error "构建失败，请检查错误信息"
+        exit 1
+    fi
+    
     start_services
     check_services
     show_info
