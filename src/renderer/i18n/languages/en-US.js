@@ -117,6 +117,7 @@ export const enUS = {
         userAvatar: 'User Avatar',
         appSettings: 'App Settings',
         desktopNotifications: 'Desktop Notifications',
+        autoSave: 'Autosave',
         showCompletedTasks: 'Show Completed Tasks',
         about: 'About',
         version: 'Version',
