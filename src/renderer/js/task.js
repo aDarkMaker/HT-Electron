@@ -1,5 +1,6 @@
 // 导入自定义下拉框
 import { initCustomSelects } from './custom-select.js';
+import { apiClient } from './api.js';
 
 // 任务管理器
 class TaskManager {
@@ -12,9 +13,13 @@ class TaskManager {
         this.init();
     }
 
-    init() {
+    async init() {
         console.log('TaskManager 初始化');
         this.bindEvents();
+
+        // 从后端加载任务
+        await this.loadTasks();
+
         console.log('开始渲染任务，当前标签页:', this.selectedTab);
 
         // 确保DOM元素存在后再设置标签页状态
@@ -408,28 +413,25 @@ class TaskManager {
         const form = document.getElementById('publish-task-form');
         if (!form) return;
 
-        const formData = new FormData(form);
         const taskData = {
-            id: this.generateTaskId(),
-            title: document.getElementById('task-title').value,
-            description: document.getElementById('task-description').value,
+            title: document.getElementById('task-title').value.trim(),
+            description: document
+                .getElementById('task-description')
+                .value.trim(),
             type: document.getElementById('task-type').value,
             priority: parseInt(document.getElementById('task-priority').value),
             deadline: document.getElementById('task-deadline').value
-                ? new Date(document.getElementById('task-deadline').value)
+                ? new Date(
+                      document.getElementById('task-deadline').value
+                  ).toISOString()
                 : null,
             tags: document
                 .getElementById('task-tags')
                 .value.split(',')
                 .map((tag) => tag.trim())
                 .filter((tag) => tag),
-            publisherName: this.app.getCurrentUser().name,
-            createdAt: new Date(),
-            acceptedCount: 0,
             maxAcceptCount:
-                document.getElementById('task-type').value === 'team' ? 3 : 1,
-            isAccepted: false,
-            status: 'available'
+                document.getElementById('task-type').value === 'team' ? 3 : 1
         };
 
         // 验证表单
@@ -439,10 +441,16 @@ class TaskManager {
         }
 
         try {
-            // 添加到任务列表
-            this.app.tasks.push(taskData);
+            // 调用后端API创建任务
+            const newTask = await apiClient.createTask(taskData);
 
-            // 保存数据
+            // 转换数据格式以适配前端
+            const transformedTask = this.transformTaskFromAPI(newTask);
+
+            // 添加到任务列表
+            this.app.tasks.push(transformedTask);
+
+            // 保存数据（可选，因为现在从后端加载）
             await this.app.saveData();
 
             // 更新界面
@@ -452,17 +460,67 @@ class TaskManager {
             // 关闭模态框
             this.hidePublishModal();
 
+            // 重置表单
+            form.reset();
+
             // 显示成功消息
             this.app.showNotification('任务发布成功！', 'success');
-
-            // 触发事件
-            const event = new CustomEvent('task-published', {
-                detail: { task: taskData }
-            });
-            document.dispatchEvent(event);
         } catch (error) {
             console.error('发布任务失败:', error);
-            this.app.showNotification('发布任务失败，请重试', 'error');
+            const errorMsg = error.message || '发布任务失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
+        }
+    }
+
+    // 转换API返回的任务数据格式
+    transformTaskFromAPI(apiTask) {
+        return {
+            id: apiTask.id.toString(),
+            title: apiTask.title,
+            description: apiTask.description,
+            type: apiTask.type,
+            priority: apiTask.priority,
+            publisherName: apiTask.publisher_name || '未知',
+            createdAt: new Date(apiTask.created_at),
+            deadline: apiTask.deadline ? new Date(apiTask.deadline) : null,
+            tags: apiTask.tags || [],
+            acceptedCount: apiTask.accepted_count || 0,
+            maxAcceptCount: apiTask.max_accept_count || 1,
+            isAccepted: false,
+            status: apiTask.status || 'available'
+        };
+    }
+
+    // 从后端加载任务
+    async loadTasks() {
+        try {
+            // 从后端加载可用任务和已接取任务
+            const availableTasks = await apiClient.getAvailableTasks();
+            const acceptedTasks = await apiClient.getAcceptedTasks();
+
+            // 转换数据格式
+            this.app.tasks = availableTasks.map((task) =>
+                this.transformTaskFromAPI(task)
+            );
+            this.app.myTasks = acceptedTasks.map((acc) => {
+                // acc可能是TaskAcceptance对象，需要提取task属性
+                const taskData = acc.task || acc;
+                const task = this.transformTaskFromAPI(taskData);
+                task.status =
+                    acc.status === 'completed' ? 'completed' : 'inProgress';
+                task.acceptedAt = acc.accepted_at
+                    ? new Date(acc.accepted_at)
+                    : new Date();
+                task.originalType = task.type;
+                return task;
+            });
+
+            // 重新渲染
+            this.renderTasks();
+            this.app.updateTaskCounts();
+        } catch (error) {
+            console.error('❌ 加载任务失败:', error);
+            this.app.showNotification('加载任务失败', 'error');
         }
     }
 
@@ -476,75 +534,21 @@ class TaskManager {
         try {
             this.processingTasks.add(taskId);
 
-            const task = this.app.tasks.find((t) => t.id === taskId);
-            if (!task) {
-                this.app.showNotification('任务不存在', 'error');
-                return;
-            }
+            // 调用后端API接取任务
+            await apiClient.acceptTask(parseInt(taskId));
 
-            // 检查用户是否已经接取过这个任务
-            const alreadyAccepted = this.app.myTasks.some(
-                (myTask) => myTask.id === taskId
-            );
-            if (alreadyAccepted) {
-                this.app.showNotification('您已接取该任务', 'warning');
-                return;
-            }
-
-            // 检查团队任务人数限制
-            if (
-                task.type === 'team' &&
-                task.acceptedCount >= task.maxAcceptCount
-            ) {
-                this.app.showNotification('该团队任务人数已满', 'warning');
-                return;
-            }
-
-            // 先创建我的任务对象（在修改原任务之前）
-            const myTask = {
-                ...task,
-                status: 'inProgress',
-                acceptedAt: new Date(),
-                originalType: task.type // 保存原始类型
-            };
-
-            this.app.myTasks.push(myTask);
-
-            // 更新任务状态
-            if (task.type === 'team') {
-                // 团队任务：增加接取人数
-                task.acceptedCount++;
-            } else {
-                // 个人任务：从可用任务列表中移除
-                const taskIndex = this.app.tasks.findIndex(
-                    (t) => t.id === taskId
-                );
-                if (taskIndex !== -1) {
-                    this.app.tasks.splice(taskIndex, 1);
-                }
-            }
-
-            // 保存数据
-            await this.app.saveData();
+            // 重新加载任务列表
+            await this.loadTasks();
 
             // 显示成功消息
             this.app.showNotification('任务接取成功！', 'success');
 
-            // 更新界面
-            this.renderTasks();
-            this.app.updateTaskCounts();
-
             // 自动切换到我的任务标签页
             this.switchTab('my-tasks');
-
-            // 触发事件（用于其他模块监听，但不重复执行操作）
-            const event = new CustomEvent('task-accepted', {
-                detail: { taskId, task: myTask }
-            });
-            document.dispatchEvent(event);
         } catch (error) {
             console.error('接取任务失败:', error);
-            this.app.showNotification('接取任务失败，请重试', 'error');
+            const errorMsg = error.message || '接取任务失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         } finally {
             // 无论成功还是失败，都要从处理集合中移除
             this.processingTasks.delete(taskId);
@@ -561,56 +565,18 @@ class TaskManager {
         try {
             this.processingTasks.add(`complete_${taskId}`);
 
-            const task = this.app.myTasks.find((t) => t.id === taskId);
-            if (!task) {
-                this.app.showNotification('任务不存在', 'error');
-                return;
-            }
+            // 调用后端API完成任务
+            await apiClient.completeTask(parseInt(taskId));
 
-            if (task.status === 'completed') {
-                this.app.showNotification('任务已完成', 'warning');
-                return;
-            }
-
-            // 已完成的任务直接从我的任务中删除
-            const taskIndex = this.app.myTasks.findIndex(
-                (t) => t.id === taskId
-            );
-            if (taskIndex !== -1) {
-                this.app.myTasks.splice(taskIndex, 1);
-            }
-
-            // 同步更新主任务列表（仅对团队任务有效）
-            if (task.originalType === 'team') {
-                const mainTask = this.app.tasks.find((t) => t.id === taskId);
-                if (mainTask) {
-                    mainTask.status = 'completed';
-                    // 减少接取人数
-                    mainTask.acceptedCount = Math.max(
-                        0,
-                        mainTask.acceptedCount - 1
-                    );
-                }
-            }
-
-            // 保存数据
-            await this.app.saveData();
-
-            // 更新界面
-            this.renderTasks();
-            this.app.updateTaskCounts(); // 更新任务计数
+            // 重新加载任务列表
+            await this.loadTasks();
 
             // 显示成功消息
             this.app.showNotification('任务完成！', 'success');
-
-            // 触发事件
-            const event = new CustomEvent('task-completed', {
-                detail: { taskId }
-            });
-            document.dispatchEvent(event);
         } catch (error) {
             console.error('完成任务失败:', error);
-            this.app.showNotification('完成任务失败，请重试', 'error');
+            const errorMsg = error.message || '完成任务失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         } finally {
             // 无论成功还是失败，都要从处理集合中移除
             this.processingTasks.delete(`complete_${taskId}`);
@@ -631,60 +597,18 @@ class TaskManager {
         try {
             this.processingTasks.add(`abandon_${taskId}`);
 
-            const taskIndex = this.app.myTasks.findIndex(
-                (t) => t.id === taskId
-            );
-            if (taskIndex === -1) {
-                this.app.showNotification('任务不存在', 'error');
-                return;
-            }
+            // 调用后端API放弃任务
+            await apiClient.abandonTask(parseInt(taskId));
 
-            const myTask = this.app.myTasks[taskIndex];
-
-            // 从我的任务中移除
-            this.app.myTasks.splice(taskIndex, 1);
-
-            // 根据任务类型处理主任务列表
-            if (myTask.originalType === 'team') {
-                // 团队任务：减少接取人数，不会退回
-                const mainTask = this.app.tasks.find((t) => t.id === taskId);
-                if (mainTask) {
-                    mainTask.acceptedCount = Math.max(
-                        0,
-                        mainTask.acceptedCount - 1
-                    );
-                }
-            } else {
-                // 个人任务：重新添加到可用任务列表
-                const restoredTask = {
-                    ...myTask,
-                    isAccepted: false,
-                    acceptedCount: 0,
-                    status: 'available'
-                };
-                delete restoredTask.acceptedAt;
-                delete restoredTask.originalType;
-                this.app.tasks.push(restoredTask);
-            }
-
-            // 保存数据
-            await this.app.saveData();
-
-            // 更新界面
-            this.renderTasks();
-            this.app.updateTaskCounts();
+            // 重新加载任务列表
+            await this.loadTasks();
 
             // 显示成功消息
-            this.app.showNotification('任务已放弃', 'info');
-
-            // 触发事件
-            const event = new CustomEvent('task-abandoned', {
-                detail: { taskId }
-            });
-            document.dispatchEvent(event);
+            this.app.showNotification('任务已放弃', 'success');
         } catch (error) {
             console.error('放弃任务失败:', error);
-            this.app.showNotification('放弃任务失败，请重试', 'error');
+            const errorMsg = error.message || '放弃任务失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         } finally {
             // 无论成功还是失败，都要从处理集合中移除
             this.processingTasks.delete(`abandon_${taskId}`);

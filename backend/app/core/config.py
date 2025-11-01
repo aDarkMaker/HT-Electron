@@ -24,7 +24,10 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://127.0.0.1:8080",
         "http://localhost:5244",  # Alist服务
-        "http://127.0.0.1:5244"
+        "http://127.0.0.1:5244",
+        "http://118.195.243.30:8000",  # 生产服务器
+        "file://",  # Electron应用
+        "electron://"  # Electron应用协议
     ]
     
     # JWT配置

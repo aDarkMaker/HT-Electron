@@ -2,9 +2,9 @@
 数据库模型定义
 """
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Enum
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Enum  # pyright: ignore[reportMissingImports]
+from sqlalchemy.orm import relationship  # pyright: ignore[reportMissingImports]
+from sqlalchemy.sql import func  # pyright: ignore[reportMissingImports]
 from datetime import datetime
 import enum
 
@@ -40,6 +40,8 @@ class User(Base):
     email = Column(String(100), unique=True, index=True, nullable=False)
     name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
+    avatar = Column(String(500), nullable=True)  # 头像URL
+    qq = Column(String(20), unique=True, index=True, nullable=True)  # QQ号
     role = Column(Enum(UserRole), default=UserRole.USER)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -48,6 +50,7 @@ class User(Base):
     # 关系
     published_tasks = relationship("Task", back_populates="publisher", foreign_keys="Task.publisher_id")
     accepted_tasks = relationship("TaskAcceptance", back_populates="user")
+    meeting_attendances = relationship("MeetingAttendance", back_populates="user")
 
 
 class Task(Base):
@@ -130,3 +133,60 @@ class Notification(Base):
     
     # 关系
     user = relationship("User")
+
+
+class MeetingType(str, enum.Enum):
+    """会议类型枚举"""
+    MEETING = "meeting"
+    DEADLINE = "deadline"
+    TASK = "task"
+    EVENT = "event"
+
+
+class AttendanceStatus(str, enum.Enum):
+    """出席状态枚举"""
+    PENDING = "pending"  # 待确认
+    CONFIRMED = "confirmed"  # 确认出席
+    ABSENT = "absent"  # 请假/缺席
+
+
+class Meeting(Base):
+    """会议/事件模型"""
+    __tablename__ = "meetings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    type = Column(Enum(MeetingType), nullable=False, default=MeetingType.MEETING)
+    meeting_date = Column(DateTime(timezone=True), nullable=False)
+    duration = Column(Integer, default=60)  # 持续时间（分钟）
+    is_recurring = Column(Boolean, default=False)  # 是否重复
+    recurring_pattern = Column(String(50), nullable=True)  # 重复模式（如：biweekly）
+    created_by_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    
+    # 时间戳
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # 关系
+    created_by = relationship("User")
+    attendances = relationship("MeetingAttendance", back_populates="meeting")
+
+
+class MeetingAttendance(Base):
+    """会议出席记录模型"""
+    __tablename__ = "meeting_attendances"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(Enum(AttendanceStatus), default=AttendanceStatus.PENDING)
+    notes = Column(Text, nullable=True)  # 备注
+    
+    # 时间戳
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # 关系
+    meeting = relationship("Meeting", back_populates="attendances")
+    user = relationship("User", back_populates="meeting_attendances")

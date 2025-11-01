@@ -7,11 +7,12 @@ services:
         container_name: hxkt-backend
         ports:
             - '8000:8000'
+        command: uvicorn main:app --host 0.0.0.0 --port 8000
         environment:
             - DEBUG=false
             - DATABASE_URL=postgresql://hxkt_user:hxkt_password@postgres:5432/hxkt_db
-            - SECRET_KEY=your-production-secret-key-change-this
-            - JWT_SECRET_KEY=your-production-jwt-secret-key-change-this
+            - SECRET_KEY=61633e34bc2f137ac24e3f94eda879738db1ace032cd43760a5584f391e4310b
+            - JWT_SECRET_KEY=e459d7a7a83df8f82bccf6e662708e03dc2f04df3dd47d0e97201f10ca11e892
             - ALIST_URL=http://alist:5244
         volumes:
             - ./uploads:/app/uploads

@@ -1,5 +1,6 @@
 // 导入自定义下拉框
 import { initCustomSelects } from './custom-select.js';
+import { apiClient } from './api.js';
 
 // 日历管理器
 class CalendarManager {
@@ -12,9 +13,11 @@ class CalendarManager {
         this.init();
     }
 
-    init() {
+    async init() {
         this.bindEvents();
         this.bindModalEvents();
+        // 从后端加载会议
+        await this.loadMeetings();
     }
 
     bindEvents() {
@@ -280,14 +283,56 @@ class CalendarManager {
             }
         });
 
-        // 从日历事件中获取
+        // 从日历事件中获取（现在从后端加载）
         this.app.calendarEvents.forEach((event) => {
-            if (this.isSameDate(new Date(event.date), date)) {
+            const eventDate = event.meeting_date || event.date;
+            if (eventDate && this.isSameDate(new Date(eventDate), date)) {
                 events.push(event);
             }
         });
 
         return events.slice(0, 3); // 最多显示3个事件
+    }
+
+    // 从后端加载会议/事件
+    async loadMeetings() {
+        try {
+            const startDate = new Date(
+                this.currentDate.getFullYear(),
+                this.currentDate.getMonth(),
+                1
+            );
+            const endDate = new Date(
+                this.currentDate.getFullYear(),
+                this.currentDate.getMonth() + 1,
+                0
+            );
+
+            const meetings = await apiClient.getMyMeetings(
+                0,
+                100,
+                startDate,
+                endDate
+            );
+
+            // 转换数据格式
+            this.app.calendarEvents = meetings.map((meeting) => ({
+                id: meeting.id.toString(),
+                title: meeting.title,
+                type: meeting.type || 'meeting',
+                date: meeting.meeting_date,
+                meeting_date: meeting.meeting_date,
+                description: meeting.description || '',
+                duration: meeting.duration || 60,
+                is_recurring: meeting.is_recurring || false,
+                meetingId: meeting.id
+            }));
+
+            // 重新渲染日历
+            this.renderCalendar();
+        } catch (error) {
+            console.error('❌ 加载会议失败:', error);
+        }
     }
 
     showEventDetails(eventId) {
@@ -926,12 +971,15 @@ class CalendarManager {
         if (!form) return;
 
         const eventData = {
-            title: document.getElementById('event-title').value,
-            description: document.getElementById('event-description').value,
+            title: document.getElementById('event-title').value.trim(),
+            description: document
+                .getElementById('event-description')
+                .value.trim(),
             type: document.getElementById('event-type').value,
             date: document.getElementById('event-date').value,
             time: document.getElementById('event-time').value,
-            duration: parseInt(document.getElementById('event-duration').value)
+            duration:
+                parseInt(document.getElementById('event-duration').value) || 60
         };
 
         // 验证表单
@@ -941,24 +989,23 @@ class CalendarManager {
         }
 
         try {
-            // 创建事件对象
-            const event = {
-                id: this.generateEventId(),
+            // 创建日期时间
+            const meetingDate = new Date(`${eventData.date}T${eventData.time}`);
+
+            // 调用后端API创建会议
+            const meetingData = {
                 title: eventData.title,
+                description: eventData.description || null,
                 type: eventData.type,
-                description: eventData.description || '',
-                date: new Date(`${eventData.date}T${eventData.time}`),
-                duration: eventData.duration
+                date: meetingDate.toISOString(),
+                duration: eventData.duration,
+                isRecurring: false
             };
 
-            // 添加到日历事件
-            this.app.calendarEvents.push(event);
+            const newMeeting = await apiClient.createMeeting(meetingData);
 
-            // 保存数据
-            await this.app.saveData();
-
-            // 更新界面
-            this.renderCalendar();
+            // 重新加载会议
+            await this.loadMeetings();
 
             // 关闭模态框
             this.hideAddEventModal();
@@ -967,30 +1014,49 @@ class CalendarManager {
             this.app.showNotification('事件添加成功！', 'success');
         } catch (error) {
             console.error('添加事件失败:', error);
-            this.app.showNotification('添加事件失败，请重试', 'error');
+            const errorMsg = error.message || '添加事件失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         }
     }
 
     async updateMeetingAttendance(eventId, attendance) {
         try {
             const event = this.app.calendarEvents.find((e) => e.id === eventId);
-            if (event) {
-                event.attendance = attendance;
-                await this.app.saveData();
-                this.renderCalendar();
-
-                // 更新模态框中的状态显示
-                this.updateModalStatusDisplay(eventId, attendance);
-
-                const statusText = this.getAttendanceStatusText(attendance);
-                this.app.showNotification(
-                    `出勤状态已更新为：${statusText}`,
-                    'success'
-                );
+            if (!event) {
+                this.app.showNotification('事件不存在', 'error');
+                return;
             }
+
+            // 映射前端状态到后端状态
+            const statusMap = {
+                pending: 'pending',
+                确认: 'confirmed',
+                confirmed: 'confirmed',
+                请假: 'absent',
+                absent: 'absent'
+            };
+
+            const backendStatus = statusMap[attendance] || 'pending';
+
+            // 调用后端API更新出席状态
+            const meetingId = event.meetingId || parseInt(eventId);
+            await apiClient.updateAttendance(meetingId, backendStatus);
+
+            // 重新加载会议数据
+            await this.loadMeetings();
+
+            // 更新模态框中的状态显示
+            this.updateModalStatusDisplay(eventId, attendance);
+
+            const statusText = this.getAttendanceStatusText(attendance);
+            this.app.showNotification(
+                `出勤状态已更新为：${statusText}`,
+                'success'
+            );
         } catch (error) {
             console.error('更新出勤状态失败:', error);
-            this.app.showNotification('更新出勤状态失败，请重试', 'error');
+            const errorMsg = error.message || '更新出勤状态失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         }
     }
 

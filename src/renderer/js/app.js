@@ -6,6 +6,7 @@ import { SettingsManager } from './settings.js';
 import { initCustomSelects } from './custom-select.js';
 import { i18n } from '../i18n/i18n.js';
 import { AuthManager } from './auth.js';
+import { apiClient } from './api.js';
 
 // 主应用类
 class HXKTerminalApp {
@@ -127,29 +128,22 @@ class HXKTerminalApp {
 
     async loadData() {
         try {
-            // 从 Electron Store 加载数据
-            this.tasks =
-                (await window.electronAPI.getStoreValue('tasks')) || [];
-            this.myTasks =
-                (await window.electronAPI.getStoreValue('myTasks')) || [];
+            // 任务数据现在从后端加载，这里只加载日历事件（暂时保留本地）
             this.calendarEvents =
                 (await window.electronAPI.getStoreValue('calendarEvents')) ||
                 [];
 
-            // 加载示例数据（如果没有数据）
-            if (this.tasks.length === 0) {
-                this.loadSampleData();
-            }
+            // 任务数据由TaskManager从后端加载
+            this.tasks = [];
+            this.myTasks = [];
 
             console.log('📊 数据加载完成:', {
                 tasks: this.tasks.length,
                 myTasks: this.myTasks.length,
                 calendarEvents: this.calendarEvents.length
             });
-            console.log('我的任务详情:', this.myTasks);
         } catch (error) {
             console.error('❌ 数据加载失败:', error);
-            this.loadSampleData();
         }
     }
 

@@ -7,7 +7,7 @@ from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
-from app.models import TaskType, TaskStatus, UserRole
+from app.models import TaskType, TaskStatus, UserRole, MeetingType, AttendanceStatus
 
 
 # 基础模式
@@ -23,6 +23,8 @@ class UserBase(BaseSchema):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=100)
+    avatar: Optional[str] = None  # 头像URL
+    qq: Optional[str] = Field(None, min_length=5, max_length=20)  # QQ号
 
 
 class UserCreate(UserBase):
@@ -36,6 +38,8 @@ class UserUpdate(BaseSchema):
     email: Optional[EmailStr] = None
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     password: Optional[str] = Field(None, min_length=6)
+    avatar: Optional[str] = None
+    qq: Optional[str] = Field(None, min_length=5, max_length=20)
 
 
 class UserResponse(UserBase):
@@ -164,3 +168,63 @@ class ErrorResponse(BaseSchema):
     error: bool = True
     message: str
     details: Optional[dict] = None
+
+
+# 会议相关模式
+class MeetingBase(BaseSchema):
+    """会议基础模式"""
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    type: MeetingType = MeetingType.MEETING
+    meeting_date: datetime
+    duration: int = Field(60, ge=15)  # 最少15分钟
+    is_recurring: bool = False
+    recurring_pattern: Optional[str] = None
+
+
+class MeetingCreate(MeetingBase):
+    """创建会议模式"""
+    pass
+
+
+class MeetingUpdate(BaseSchema):
+    """更新会议模式"""
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    type: Optional[MeetingType] = None
+    meeting_date: Optional[datetime] = None
+    duration: Optional[int] = Field(None, ge=15)
+    is_recurring: Optional[bool] = None
+    recurring_pattern: Optional[str] = None
+
+
+class MeetingResponse(MeetingBase):
+    """会议响应模式"""
+    id: int
+    created_by_id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class AttendanceUpdate(BaseSchema):
+    """更新出席状态模式"""
+    status: AttendanceStatus
+    notes: Optional[str] = None
+
+
+class AttendanceResponse(BaseSchema):
+    """出席记录响应模式"""
+    id: int
+    meeting_id: int
+    user_id: int
+    user_name: Optional[str] = None
+    user_avatar: Optional[str] = None
+    status: AttendanceStatus
+    notes: Optional[str] = None
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
+class MeetingDetailResponse(MeetingResponse):
+    """会议详情响应模式（包含出席情况）"""
+    attendances: List[AttendanceResponse] = []

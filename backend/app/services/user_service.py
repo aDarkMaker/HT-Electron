@@ -2,9 +2,9 @@
 用户服务
 """
 
-from sqlalchemy.orm import Session
-from sqlalchemy import or_
-from passlib.context import CryptContext
+from sqlalchemy.orm import Session  # pyright: ignore[reportMissingImports]
+from sqlalchemy import or_  # pyright: ignore[reportMissingImports]
+from passlib.context import CryptContext  # pyright: ignore[reportMissingModuleSource]
 from typing import Optional, List
 import logging
 
@@ -43,6 +43,10 @@ class UserService:
         """根据邮箱获取用户"""
         return self.db.query(User).filter(User.email == email).first()
     
+    def get_user_by_qq(self, qq: str) -> Optional[User]:
+        """根据QQ号获取用户"""
+        return self.db.query(User).filter(User.qq == qq).first()
+    
     def authenticate_user(self, username: str, password: str) -> Optional[User]:
         """验证用户"""
         user = self.get_user_by_username(username)
@@ -59,6 +63,9 @@ class UserService:
             raise ValueError("用户名已存在")
         if self.get_user_by_email(user_data.email):
             raise ValueError("邮箱已存在")
+        # 检查QQ号是否已存在
+        if user_data.qq and self.get_user_by_qq(user_data.qq):
+            raise ValueError("QQ号已被注册")
         
         # 创建新用户
         hashed_password = self.get_password_hash(user_data.password)
@@ -67,6 +74,8 @@ class UserService:
             email=user_data.email,
             name=user_data.name,
             hashed_password=hashed_password,
+            avatar=user_data.avatar,
+            qq=user_data.qq,
             role=UserRole.USER
         )
         
@@ -91,6 +100,11 @@ class UserService:
         if user_data.email and user_data.email != user.email:
             if self.get_user_by_email(user_data.email):
                 raise ValueError("邮箱已存在")
+        
+        # 检查QQ号是否被其他用户使用
+        if user_data.qq and user_data.qq != user.qq:
+            if self.get_user_by_qq(user_data.qq):
+                raise ValueError("QQ号已被注册")
         
         # 更新用户信息
         update_data = user_data.dict(exclude_unset=True)

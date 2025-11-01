@@ -2,7 +2,7 @@
 用户API端点
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Form
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -36,8 +36,8 @@ async def register_user(
 
 @router.post("/login", response_model=Token)
 async def login_user(
-    username: str,
-    password: str,
+    username: str = Form(...),
+    password: str = Form(...),
     db: Session = Depends(get_db)
 ):
     """用户登录"""
@@ -53,6 +53,51 @@ async def login_user(
     
     access_token = create_access_token(data={"sub": user.username})
     return {"access_token": access_token, "token_type": "bearer"}
+
+
+@router.post("/register-with-qq", response_model=UserResponse)
+async def register_user_with_qq(
+    username: str = Form(...),
+    password: str = Form(...),
+    qq: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    """使用QQ号注册用户（简化版，使用QQ号邮箱）"""
+    user_service = UserService(db)
+    
+    # 检查用户名是否已存在
+    if user_service.get_user_by_username(username):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="用户名已存在"
+        )
+    
+    # 检查QQ号是否已存在
+    if user_service.get_user_by_qq(qq):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="QQ号已被注册"
+        )
+    
+    # 使用QQ号邮箱格式
+    email = f"{qq}@qq.com"
+    
+    try:
+        from app.schemas import UserCreate
+        user_data = UserCreate(
+            username=username,
+            password=password,
+            email=email,
+            name=username,  # 默认使用用户名作为姓名
+            qq=qq
+        )
+        user = user_service.create_user(user_data)
+        return user
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.get("/me", response_model=UserResponse)

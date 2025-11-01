@@ -1,3 +1,6 @@
+// 导入 API 客户端
+import { apiClient } from './api.js';
+
 // 认证管理器
 class AuthManager {
     constructor(app) {
@@ -31,10 +34,26 @@ class AuthManager {
                 await window.electronAPI.getStoreValue('user_info');
 
             if (token && userInfo) {
-                // 验证token有效性（这里简单检查，实际应该调用后端API）
-                this.isAuthenticated = true;
-                this.currentUser = userInfo;
-                this.showApp();
+                // 验证 token 有效性（调用后端 API）
+                try {
+                    apiClient.token = token;
+                    const currentUser = await apiClient.fetchUserInfo();
+
+                    if (currentUser) {
+                        this.isAuthenticated = true;
+                        this.currentUser = currentUser;
+                        this.showApp();
+                    } else {
+                        // Token 无效，清除
+                        await apiClient.logout();
+                        this.showAuth();
+                    }
+                } catch (error) {
+                    // Token 已过期或无效
+                    console.error('Token验证失败:', error);
+                    await apiClient.logout();
+                    this.showAuth();
+                }
             } else {
                 this.showAuth();
             }
@@ -141,11 +160,9 @@ class AuthManager {
     }
 
     async handleLogin() {
-        const form = document.getElementById('login-form');
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
 
-        // 显示错误
         this.showError('', '');
 
         if (!username || !password) {
@@ -153,53 +170,43 @@ class AuthManager {
             return;
         }
 
-        // TODO: 调用后端API进行登录
-        // const response = await fetch('http://your-backend-api/auth/login', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ username, password })
-        // });
-
-        // 模拟登录（稍后替换为实际API调用）
         try {
-            // 从本地存储查找用户
-            const users =
-                (await window.electronAPI.getStoreValue('users')) || [];
-            const user = users.find((u) => u.username === username);
+            // 调用后端 API
+            await apiClient.login(username, password);
 
-            if (!user) {
-                this.showError('login', '用户不存在');
-                return;
-            }
+            // 获取用户信息
+            const userInfo = await apiClient.fetchUserInfo();
 
-            if (user.password !== password) {
-                this.showError('login', '密码错误');
-                return;
-            }
+            if (userInfo) {
+                // 保存用户信息
+                this.currentUser = {
+                    id: userInfo.id,
+                    username: userInfo.username,
+                    name: userInfo.name,
+                    email: userInfo.email,
+                    qq: userInfo.qq,
+                    avatar: userInfo.avatar,
+                    role: userInfo.role
+                };
 
-            // 登录成功
-            await this.setAuthenticated(user);
-            this.showSuccess('login', '登录成功！');
+                await this.setAuthenticated(userInfo);
+                this.showSuccess('login', '登录成功！');
 
-            // 延迟一下以显示成功消息
-            setTimeout(() => {
-                this.showApp();
-                // 如果app还没有初始化，重新初始化
-                if (window.app) {
-                    // 检查是否已经初始化过
-                    if (!window.app.taskManager && !window.app.navigation) {
+                setTimeout(() => {
+                    this.showApp();
+                    if (window.app && !window.app.taskManager) {
                         window.app.initializeAuthenticatedUser();
                     }
-                }
-            }, 500);
+                }, 500);
+            }
         } catch (error) {
             console.error('❌ 登录失败:', error);
-            this.showError('login', '登录失败，请重试');
+            const errorMsg = error.message || '登录失败，请检查用户名和密码';
+            this.showError('login', errorMsg);
         }
     }
 
     async handleRegister() {
-        const form = document.getElementById('register-form');
         const username = document
             .getElementById('register-username')
             .value.trim();
@@ -209,7 +216,6 @@ class AuthManager {
         ).value;
         const qq = document.getElementById('register-qq').value.trim();
 
-        // 清除之前的错误信息
         this.showError('', '');
 
         // 验证输入
@@ -233,61 +239,45 @@ class AuthManager {
             return;
         }
 
-        // TODO: 调用后端API进行注册
-        // const response = await fetch('http://your-backend-api/auth/register', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ username, password, qq })
-        // });
-
-        // 模拟注册（稍后替换为实际API调用）
         try {
-            const users =
-                (await window.electronAPI.getStoreValue('users')) || [];
-
-            // 检查用户名是否已存在
-            if (users.some((u) => u.username === username)) {
-                this.showError('register', '用户名已存在');
-                return;
-            }
-
-            // 检查QQ号是否已存在
-            if (users.some((u) => u.qq === qq)) {
-                this.showError('register', '该QQ号已被注册');
-                return;
-            }
-
-            // 创建新用户
-            const newUser = {
-                id: Date.now().toString(),
+            // 调用后端 API 注册
+            const userData = {
                 username: username,
                 password: password,
-                qq: qq,
-                createdAt: new Date().toISOString(),
-                role: 'member'
+                qq: qq
             };
 
-            users.push(newUser);
-            await window.electronAPI.setStoreValue('users', users);
+            const response = await apiClient.register(userData);
 
             // 注册成功后自动登录
-            await this.setAuthenticated(newUser);
-            this.showSuccess('register', '注册成功！');
+            await apiClient.login(username, password);
+            const userInfo = await apiClient.fetchUserInfo();
 
-            // 延迟一下以显示成功消息
-            setTimeout(() => {
-                this.showApp();
-                // 如果app还没有初始化，重新初始化
-                if (window.app) {
-                    // 检查是否已经初始化过
-                    if (!window.app.taskManager && !window.app.navigation) {
+            if (userInfo) {
+                this.currentUser = {
+                    id: userInfo.id,
+                    username: userInfo.username,
+                    name: userInfo.name,
+                    email: userInfo.email,
+                    qq: userInfo.qq,
+                    avatar: userInfo.avatar,
+                    role: userInfo.role
+                };
+
+                await this.setAuthenticated(userInfo);
+                this.showSuccess('register', '注册成功！');
+
+                setTimeout(() => {
+                    this.showApp();
+                    if (window.app && !window.app.taskManager) {
                         window.app.initializeAuthenticatedUser();
                     }
-                }
-            }, 500);
+                }, 500);
+            }
         } catch (error) {
             console.error('❌ 注册失败:', error);
-            this.showError('register', '注册失败，请重试');
+            const errorMsg = error.message || '注册失败，请重试';
+            this.showError('register', errorMsg);
         }
     }
 
@@ -297,29 +287,25 @@ class AuthManager {
         this.currentUser = {
             id: user.id,
             username: user.username,
+            name: user.name,
+            email: user.email,
             qq: user.qq,
+            avatar: user.avatar,
             role: user.role,
-            createdAt: user.createdAt
+            created_at: user.created_at
         };
 
-        await window.electronAPI.setStoreValue(
-            'auth_token',
-            'token_' + Date.now()
-        );
+        // Token 已在 apiClient.login() 中保存
         await window.electronAPI.setStoreValue('user_info', this.currentUser);
     }
 
     async logout() {
         try {
+            await apiClient.logout();
             this.isAuthenticated = false;
             this.currentUser = null;
-
-            await window.electronAPI.deleteStoreValue('auth_token');
-            await window.electronAPI.deleteStoreValue('user_info');
-
             this.showAuth();
             this.clearMessages();
-
             console.log('✅ 登出成功');
         } catch (error) {
             console.error('❌ 登出失败:', error);

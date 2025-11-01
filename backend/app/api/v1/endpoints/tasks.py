@@ -5,6 +5,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+import json
 
 from app.core.database import get_db
 from app.core.auth import get_current_active_user
@@ -51,11 +52,28 @@ async def get_tasks(
     task_service = TaskService(db)
     tasks = task_service.get_tasks(skip=skip, limit=limit, task_type=task_type)
     
-    # 添加发布者姓名
+    # 添加发布者姓名并转换数据格式
+    result = []
     for task in tasks:
-        task.publisher_name = task.publisher.name
+        task_dict = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+            "priority": task.priority,
+            "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+            "deadline": task.deadline.isoformat() if task.deadline else None,
+            "tags": json.loads(task.tags) if task.tags else [],
+            "accepted_count": task.accepted_count,
+            "max_accept_count": task.max_accept_count,
+            "publisher_id": task.publisher_id,
+            "publisher_name": task.publisher.name if task.publisher else "未知",
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None
+        }
+        result.append(task_dict)
     
-    return tasks
+    return result
 
 
 @router.get("/available", response_model=List[TaskResponse])
@@ -69,11 +87,28 @@ async def get_available_tasks(
     task_service = TaskService(db)
     tasks = task_service.get_available_tasks(skip=skip, limit=limit)
     
-    # 添加发布者姓名
+    # 添加发布者姓名并转换数据格式
+    result = []
     for task in tasks:
-        task.publisher_name = task.publisher.name
+        task_dict = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+            "priority": task.priority,
+            "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+            "deadline": task.deadline.isoformat() if task.deadline else None,
+            "tags": json.loads(task.tags) if task.tags else [],
+            "accepted_count": task.accepted_count,
+            "max_accept_count": task.max_accept_count,
+            "publisher_id": task.publisher_id,
+            "publisher_name": task.publisher.name if task.publisher else "未知",
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None
+        }
+        result.append(task_dict)
     
-    return tasks
+    return result
 
 
 @router.get("/my-tasks", response_model=List[TaskResponse])
@@ -94,7 +129,7 @@ async def get_my_tasks(
     return tasks
 
 
-@router.get("/accepted", response_model=List[TaskAcceptanceResponse])
+@router.get("/accepted", response_model=List[dict])
 async def get_accepted_tasks(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -104,7 +139,37 @@ async def get_accepted_tasks(
     """获取我接取的任务"""
     task_service = TaskService(db)
     acceptances = task_service.get_user_accepted_tasks(current_user.id, skip=skip, limit=limit)
-    return acceptances
+    
+    # 构建包含任务信息的响应
+    result = []
+    for acc in acceptances:
+        task = acc.task
+        result.append({
+            "id": acc.id,
+            "task_id": acc.task_id,
+            "user_id": acc.user_id,
+            "status": acc.status.value if hasattr(acc.status, 'value') else str(acc.status),
+            "accepted_at": acc.accepted_at.isoformat() if acc.accepted_at else None,
+            "completed_at": acc.completed_at.isoformat() if acc.completed_at else None,
+            "task": {
+                "id": task.id,
+                "title": task.title,
+                "description": task.description,
+                "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+                "priority": task.priority,
+                "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+                "deadline": task.deadline.isoformat() if task.deadline else None,
+                "tags": json.loads(task.tags) if task.tags else [],
+                "accepted_count": task.accepted_count,
+                "max_accept_count": task.max_accept_count,
+                "publisher_id": task.publisher_id,
+                "publisher_name": task.publisher.name if task.publisher else "未知",
+                "created_at": task.created_at.isoformat() if task.created_at else None,
+                "updated_at": task.updated_at.isoformat() if task.updated_at else None
+            }
+        })
+    
+    return result
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
@@ -278,8 +343,25 @@ async def search_tasks(
     task_service = TaskService(db)
     tasks = task_service.search_tasks(query=query, skip=skip, limit=limit)
     
-    # 添加发布者姓名
+    # 添加发布者姓名并转换数据格式
+    result = []
     for task in tasks:
-        task.publisher_name = task.publisher.name
+        task_dict = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+            "priority": task.priority,
+            "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+            "deadline": task.deadline.isoformat() if task.deadline else None,
+            "tags": json.loads(task.tags) if task.tags else [],
+            "accepted_count": task.accepted_count,
+            "max_accept_count": task.max_accept_count,
+            "publisher_id": task.publisher_id,
+            "publisher_name": task.publisher.name if task.publisher else "未知",
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None
+        }
+        result.append(task_dict)
     
-    return tasks
+    return result
