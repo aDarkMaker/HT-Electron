@@ -29,7 +29,7 @@ class UserBase(BaseSchema):
 
 class UserCreate(UserBase):
     """创建用户模式"""
-    password: str = Field(..., min_length=6)
+    password: str = Field(..., min_length=6, max_length=72)
 
 
 class UserUpdate(BaseSchema):
@@ -37,7 +37,7 @@ class UserUpdate(BaseSchema):
     username: Optional[str] = Field(None, min_length=3, max_length=50)
     email: Optional[EmailStr] = None
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    password: Optional[str] = Field(None, min_length=6)
+    password: Optional[str] = Field(None, min_length=6, max_length=72)
     avatar: Optional[str] = None
     qq: Optional[str] = Field(None, min_length=5, max_length=20)
 

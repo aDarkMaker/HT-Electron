@@ -17,6 +17,20 @@ logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+def truncate_password_for_bcrypt(password: str) -> str:
+    """截断密码以符合 bcrypt 的 72 字节限制"""
+    # 将密码编码为字节
+    password_bytes = password.encode('utf-8')
+    
+    # 如果超过72字节，截断
+    if len(password_bytes) > 72:
+        # 截断到72字节并尝试解码
+        # 使用 errors='ignore' 忽略截断导致的不完整字符
+        return password_bytes[:72].decode('utf-8', errors='ignore')
+    
+    return password
+
+
 class UserService:
     """用户服务类"""
     
@@ -25,10 +39,14 @@ class UserService:
     
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """验证密码"""
+        # bcrypt 限制密码不能超过 72 字节
+        plain_password = truncate_password_for_bcrypt(plain_password)
         return pwd_context.verify(plain_password, hashed_password)
     
     def get_password_hash(self, password: str) -> str:
         """获取密码哈希"""
+        # bcrypt 限制密码不能超过 72 字节
+        password = truncate_password_for_bcrypt(password)
         return pwd_context.hash(password)
     
     def get_user_by_id(self, user_id: int) -> Optional[User]:
