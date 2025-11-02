@@ -312,7 +312,10 @@ class HXKTerminalApp {
                 break;
             case 'calendar':
                 if (this.calendarManager) {
-                    this.calendarManager.renderCalendar();
+                    // 切换到日历视图时重新加载会议
+                    this.calendarManager.loadMeetings().then(() => {
+                        this.calendarManager.renderCalendar();
+                    });
                 }
                 break;
             case 'settings':

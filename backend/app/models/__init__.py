@@ -40,7 +40,7 @@ class User(Base):
     email = Column(String(100), unique=True, index=True, nullable=False)
     name = Column(String(100), nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    avatar = Column(String(500), nullable=True)  # 头像URL
+    avatar = Column(Text, nullable=True)  # 头像数据（base64编码或URL）
     qq = Column(String(20), unique=True, index=True, nullable=True)  # QQ号
     role = Column(Enum(UserRole), default=UserRole.USER)
     is_active = Column(Boolean, default=True)
@@ -180,6 +180,7 @@ class MeetingAttendance(Base):
     id = Column(Integer, primary_key=True, index=True)
     meeting_id = Column(Integer, ForeignKey("meetings.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    instance_date = Column(DateTime(timezone=True), nullable=True)  # 实例日期（用于区分重复会议的不同实例）
     status = Column(Enum(AttendanceStatus), default=AttendanceStatus.PENDING)
     notes = Column(Text, nullable=True)  # 备注
     

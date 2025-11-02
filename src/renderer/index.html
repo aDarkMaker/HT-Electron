@@ -843,6 +843,44 @@
                                     <span class="duration-unit">分钟</span>
                                 </div>
                             </div>
+                            <div class="form-group">
+                                <label
+                                    style="
+                                        display: flex;
+                                        align-items: center;
+                                        cursor: pointer;
+                                    "
+                                >
+                                    <input
+                                        type="checkbox"
+                                        id="event-is-recurring"
+                                        style="margin-right: 8px; width: auto"
+                                    />
+                                    重复事件
+                                </label>
+                            </div>
+                            <div
+                                class="form-group"
+                                id="recurring-pattern-group"
+                                style="display: none"
+                            >
+                                <label for="event-recurring-pattern">
+                                    <img
+                                        src="Assets/Icons/calendar.svg"
+                                        width="14"
+                                        height="14"
+                                        alt="重复模式"
+                                    />
+                                    重复模式
+                                </label>
+                                <select id="event-recurring-pattern">
+                                    <option value="weekly">每周</option>
+                                    <option value="biweekly" selected>
+                                        每两周（双周）
+                                    </option>
+                                    <option value="monthly">每月</option>
+                                </select>
+                            </div>
                         </div>
                     </form>
                 </div>

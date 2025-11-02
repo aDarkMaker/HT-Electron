@@ -23,7 +23,7 @@ class UserBase(BaseSchema):
     username: str = Field(..., min_length=3, max_length=50)
     email: EmailStr
     name: str = Field(..., min_length=1, max_length=100)
-    avatar: Optional[str] = None  # 头像URL
+    avatar: Optional[str] = None  # 头像数据（base64编码或URL）
     qq: Optional[str] = Field(None, min_length=5, max_length=20)  # QQ号
 
 
@@ -210,6 +210,7 @@ class AttendanceUpdate(BaseSchema):
     """更新出席状态模式"""
     status: AttendanceStatus
     notes: Optional[str] = None
+    instance_date: Optional[datetime] = None  # 实例日期（用于区分重复会议的不同实例）
 
 
 class AttendanceResponse(BaseSchema):
@@ -219,6 +220,7 @@ class AttendanceResponse(BaseSchema):
     user_id: int
     user_name: Optional[str] = None
     user_avatar: Optional[str] = None
+    instance_date: Optional[datetime] = None  # 实例日期
     status: AttendanceStatus
     notes: Optional[str] = None
     created_at: datetime

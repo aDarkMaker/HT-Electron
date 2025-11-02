@@ -163,6 +163,11 @@ class ApiClient {
     async fetchUserInfo() {
         try {
             const userInfo = await this.get('/api/v1/users/me');
+
+            // 优先使用后端返回的头像（数据库中的头像）
+            // 如果后端有头像，使用后端的；如果没有，则为null
+            // 不再使用本地头像覆盖后端数据
+
             await window.electronAPI?.setStoreValue('user_info', userInfo);
             return userInfo;
         } catch (error) {
@@ -312,10 +317,16 @@ class ApiClient {
         return this.delete(`/api/v1/meetings/${meetingId}`);
     }
 
-    async updateAttendance(meetingId, status, notes = null) {
+    async updateAttendance(
+        meetingId,
+        status,
+        notes = null,
+        instanceDate = null
+    ) {
         const apiData = {
             status: status, // 'pending', 'confirmed', 'absent'
-            notes: notes || null
+            notes: notes || null,
+            instance_date: instanceDate || null // 实例日期（用于区分重复会议的不同实例）
         };
         return this.post(`/api/v1/meetings/${meetingId}/attendance`, apiData);
     }
@@ -328,6 +339,11 @@ class ApiClient {
         return this.get(
             `/api/v1/meetings/user/attendances?skip=${skip}&limit=${limit}`
         );
+    }
+
+    async getAttendancesByDate(date) {
+        // date格式: YYYY-MM-DD
+        return this.get(`/api/v1/meetings/date/${date}/attendances`);
     }
 }
 

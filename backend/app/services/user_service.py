@@ -102,6 +102,43 @@ class UserService:
         self.db.refresh(db_user)
         
         logger.info(f"创建新用户: {user_data.username}")
+        
+        # 确保默认例会存在，并为新用户创建出席记录
+        try:
+            from app.models import Meeting, MeetingAttendance, AttendanceStatus, MeetingType
+            from datetime import datetime, timezone, timedelta
+            
+            # 查找默认双周例会
+            default_meeting = self.db.query(Meeting).filter(
+                Meeting.title == "双周例会",
+                Meeting.is_recurring == True,
+                Meeting.recurring_pattern == "biweekly"
+            ).first()
+            
+            # 如果默认例会不存在，创建它
+            if not default_meeting:
+                # 使用中国时区（UTC+8）
+                china_tz = timezone(timedelta(hours=8))
+                next_meeting_date = datetime(2025, 11, 6, 16, 0, 0, tzinfo=china_tz)  # 中国时间下午4点
+                default_meeting = Meeting(
+                    title="双周例会",
+                    description="定期团队例会，讨论项目进展和安排",
+                    type=MeetingType.MEETING,
+                    meeting_date=next_meeting_date,
+                    duration=60,  # 1小时
+                    is_recurring=True,
+                    recurring_pattern="biweekly",
+                    created_by_id=db_user.id  # 使用新注册的用户作为创建者
+                )
+                self.db.add(default_meeting)
+                self.db.commit()
+                logger.info(f"为新用户 {db_user.username} 创建了默认双周例会，下一次例会时间: {next_meeting_date.strftime('%Y-%m-%d %H:%M')}")
+                # 注意：对于重复会议，出席记录会在生成实例时自动创建，不需要在这里创建
+            # 对于已存在的默认例会，不需要为新用户创建出席记录，因为会在查看日历时自动创建
+        except Exception as e:
+            logger.warning(f"为新用户创建默认例会出席记录失败: {str(e)}", exc_info=True)
+            # 不阻止用户创建，只是记录警告
+        
         return db_user
     
     def update_user(self, user_id: int, user_data: UserUpdate) -> Optional[User]:
@@ -129,13 +166,24 @@ class UserService:
         if "password" in update_data:
             update_data["hashed_password"] = self.get_password_hash(update_data.pop("password"))
         
+        # 特殊处理avatar：如果是base64数据，验证长度
+        if "avatar" in update_data and update_data["avatar"]:
+            avatar_data = update_data["avatar"]
+            # 如果是base64编码的图片数据（通常以data:image开头）
+            if isinstance(avatar_data, str) and avatar_data.startswith("data:image"):
+                # base64数据可能很大，限制在10MB以内（约13,300,000字符）
+                max_avatar_length = 13300000
+                if len(avatar_data) > max_avatar_length:
+                    raise ValueError("头像数据过大，请选择较小的图片")
+                logger.info(f"更新用户头像: {user.username}, 头像大小: {len(avatar_data)} 字符")
+        
         for field, value in update_data.items():
             setattr(user, field, value)
         
         self.db.commit()
         self.db.refresh(user)
         
-        logger.info(f"更新用户: {user.username}")
+        logger.info(f"更新用户: {user.username}, 更新的字段: {list(update_data.keys())}")
         return user
     
     def delete_user(self, user_id: int) -> bool:

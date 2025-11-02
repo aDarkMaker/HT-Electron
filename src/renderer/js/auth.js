@@ -74,6 +74,30 @@ class AuthManager {
         document
             .getElementById('custom-titlebar')
             ?.style.setProperty('display', 'none');
+
+        // 确保显示登录界面而不是注册界面
+        const loginContainer = document.getElementById('login-container');
+        const registerContainer = document.getElementById('register-container');
+        const switchText = document.getElementById('auth-switch-text');
+        const switchLink = document.getElementById('auth-switch-link');
+        const title = document.querySelectorAll('.auth-title')[0];
+        const subtitle = document.querySelectorAll('.auth-subtitle')[0];
+
+        if (loginContainer && registerContainer) {
+            loginContainer.style.display = 'block';
+            registerContainer.style.display = 'none';
+            if (switchText) switchText.textContent = '还没有账号？';
+            if (switchLink) switchLink.textContent = '立即注册';
+            if (title) title.textContent = '欢迎回来';
+            if (subtitle) subtitle.textContent = '登录您的账号以继续';
+        }
+
+        // 清除表单和消息
+        this.clearMessages();
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        if (loginForm) loginForm.reset();
+        if (registerForm) registerForm.reset();
     }
 
     showApp() {
@@ -163,7 +187,8 @@ class AuthManager {
         const username = document.getElementById('login-username').value.trim();
         const password = document.getElementById('login-password').value;
 
-        this.showError('', '');
+        // 清除之前的错误信息，但不显示空消息
+        this.clearMessages();
 
         if (!username || !password) {
             this.showError('login', '请填写所有字段');
@@ -216,7 +241,8 @@ class AuthManager {
         ).value;
         const qq = document.getElementById('register-qq').value.trim();
 
-        this.showError('', '');
+        // 清除之前的错误信息，但不显示空消息
+        this.clearMessages();
 
         // 验证输入
         if (!username || !password || !confirmPassword || !qq) {
@@ -313,16 +339,29 @@ class AuthManager {
     }
 
     showError(type, message) {
+        // 如果消息为空，不显示通知
+        if (!message || message.trim() === '') {
+            return;
+        }
         // 创建侧边滑入的错误通知
         this.showToastNotification(message, 'error');
     }
 
     showSuccess(type, message) {
+        // 如果消息为空，不显示通知
+        if (!message || message.trim() === '') {
+            return;
+        }
         // 创建侧边滑入的成功通知
         this.showToastNotification(message, 'success');
     }
 
     showToastNotification(message, type = 'success') {
+        // 如果消息为空，不显示通知
+        if (!message || message.trim() === '') {
+            return;
+        }
+
         // 移除已存在的通知
         const existingToast = document.getElementById(
             'auth-toast-notification'

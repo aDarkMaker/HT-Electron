@@ -16,8 +16,14 @@ class CalendarManager {
     async init() {
         this.bindEvents();
         this.bindModalEvents();
-        // 从后端加载会议
-        await this.loadMeetings();
+        // 从后端加载会议（只在已登录时加载）
+        if (
+            this.app &&
+            this.app.authManager &&
+            this.app.authManager.isUserAuthenticated()
+        ) {
+            await this.loadMeetings();
+        }
     }
 
     bindEvents() {
@@ -272,8 +278,19 @@ class CalendarManager {
         // 从日历事件中获取（现在从后端加载）
         this.app.calendarEvents.forEach((event) => {
             const eventDate = event.meeting_date || event.date;
-            if (eventDate && this.isSameDate(new Date(eventDate), date)) {
-                events.push(event);
+            if (eventDate) {
+                try {
+                    const eventDateObj = new Date(eventDate);
+                    // 确保日期对象有效且匹配
+                    if (
+                        !isNaN(eventDateObj.getTime()) &&
+                        this.isSameDate(eventDateObj, date)
+                    ) {
+                        events.push(event);
+                    }
+                } catch (e) {
+                    console.warn('日期解析失败:', eventDate, e);
+                }
             }
         });
 
@@ -283,42 +300,117 @@ class CalendarManager {
     // 从后端加载会议/事件
     async loadMeetings() {
         try {
+            // 扩展日期范围以包含重复事件
             const startDate = new Date(
                 this.currentDate.getFullYear(),
-                this.currentDate.getMonth(),
+                this.currentDate.getMonth() - 1, // 向前一个月
                 1
             );
             const endDate = new Date(
                 this.currentDate.getFullYear(),
-                this.currentDate.getMonth() + 1,
+                this.currentDate.getMonth() + 2, // 向后一个月
                 0
             );
 
-            const meetings = await apiClient.getMyMeetings(
+            // 使用 getMeetings 获取所有会议（包括重复实例）
+            // 日历视图应该显示所有会议，而不仅仅是用户相关的
+            const meetings = await apiClient.getMeetings(
                 0,
                 100,
                 startDate,
                 endDate
             );
 
-            // 转换数据格式
-            this.app.calendarEvents = meetings.map((meeting) => ({
-                id: meeting.id.toString(),
-                title: meeting.title,
-                type: meeting.type || 'meeting',
-                date: meeting.meeting_date,
-                meeting_date: meeting.meeting_date,
-                description: meeting.description || '',
-                duration: meeting.duration || 60,
-                is_recurring: meeting.is_recurring || false,
-                meetingId: meeting.id
-            }));
+            console.log('📅 后端返回的会议数量:', meetings?.length || 0);
+
+            // 转换数据格式，后端已经生成了所有重复实例
+            this.app.calendarEvents = [];
+
+            if (meetings && Array.isArray(meetings)) {
+                meetings.forEach((meeting) => {
+                    // 后端已经处理了重复事件的生成，直接使用返回的数据
+                    const event = {
+                        id:
+                            meeting.id?.toString() ||
+                            String(
+                                meeting.meetingId || meeting.id || Date.now()
+                            ), // 对于重复实例，这是组合ID（如 "1_2024-11-06"）
+                        title: meeting.title,
+                        type: meeting.type || 'meeting',
+                        date: meeting.date || meeting.meeting_date, // 优先使用 date 字段
+                        meeting_date: meeting.meeting_date || meeting.date,
+                        description: meeting.description || '',
+                        duration: meeting.duration || 60,
+                        is_recurring:
+                            meeting.is_recurring ||
+                            meeting.isRecurring ||
+                            false,
+                        recurring_pattern: meeting.recurring_pattern,
+                        meetingId: meeting.meetingId || meeting.id, // 原始会议ID
+                        attendance: meeting.attendance || 'pending' // 出席状态，默认为待确认（灰色）
+                    };
+
+                    this.app.calendarEvents.push(event);
+                });
+            }
+
+            console.log('📅 已加载会议数量:', this.app.calendarEvents.length);
+            if (this.app.calendarEvents.length > 0) {
+                console.log(
+                    '📅 会议列表示例:',
+                    this.app.calendarEvents.slice(0, 3).map((e) => ({
+                        id: e.id,
+                        title: e.title,
+                        date: e.meeting_date || e.date,
+                        type: e.type
+                    }))
+                );
+            } else {
+                console.warn('⚠️ 没有加载到任何会议，可能的原因：');
+                console.warn('  1. 数据库中没有会议数据');
+                console.warn('  2. 会议日期不在查询范围内');
+                console.warn('  3. 会议没有被标记为重复或不在日期范围内');
+                console.warn(`  4. 查询日期范围: ${startDate} 到 ${endDate}`);
+            }
 
             // 重新渲染日历
             this.renderCalendar();
         } catch (error) {
             console.error('❌ 加载会议失败:', error);
+            // 即使加载失败，也渲染日历（显示已存在的事件）
+            this.renderCalendar();
         }
+    }
+
+    // 生成重复事件的实例
+    generateRecurringInstances(baseEvent, startDate, endDate) {
+        const instances = [];
+        const meetingDate = new Date(baseEvent.meeting_date);
+
+        // 处理双周例会 (biweekly)
+        if (baseEvent.recurring_pattern === 'biweekly') {
+            let currentDate = new Date(meetingDate);
+
+            // 从第一个会议日期开始
+            while (currentDate <= endDate) {
+                // 如果日期在范围内，添加到实例列表
+                if (currentDate >= startDate) {
+                    instances.push({
+                        ...baseEvent,
+                        id: `${baseEvent.meetingId}_${currentDate.toISOString().split('T')[0]}`,
+                        date: currentDate.toISOString(),
+                        meeting_date: currentDate.toISOString(),
+                        isRecurring: true
+                    });
+                }
+                // 增加两周（14天）
+                currentDate = new Date(currentDate);
+                currentDate.setDate(currentDate.getDate() + 14);
+            }
+        }
+        // 可以在这里添加其他重复模式，如 weekly, monthly 等
+
+        return instances.length > 0 ? instances : [baseEvent];
     }
 
     showEventDetails(eventId) {
@@ -970,6 +1062,20 @@ class CalendarManager {
 
             // 初始化模态框中的自定义下拉框
             setTimeout(() => initCustomSelects(), 0);
+
+            // 设置重复选项切换
+            const isRecurringCheckbox =
+                document.getElementById('event-is-recurring');
+            const recurringPatternGroup = document.getElementById(
+                'recurring-pattern-group'
+            );
+            if (isRecurringCheckbox && recurringPatternGroup) {
+                isRecurringCheckbox.addEventListener('change', function () {
+                    recurringPatternGroup.style.display = this.checked
+                        ? 'block'
+                        : 'none';
+                });
+            }
         }
     }
 
@@ -986,6 +1092,18 @@ class CalendarManager {
         const form = document.getElementById('add-event-form');
         if (form) {
             form.reset();
+            // 重置重复选项
+            const isRecurringCheckbox =
+                document.getElementById('event-is-recurring');
+            const recurringPatternGroup = document.getElementById(
+                'recurring-pattern-group'
+            );
+            if (isRecurringCheckbox) {
+                isRecurringCheckbox.checked = false;
+            }
+            if (recurringPatternGroup) {
+                recurringPatternGroup.style.display = 'none';
+            }
         }
     }
 
@@ -1015,6 +1133,20 @@ class CalendarManager {
             // 创建日期时间
             const meetingDate = new Date(`${eventData.date}T${eventData.time}`);
 
+            // 获取重复选项
+            const isRecurringCheckbox =
+                document.getElementById('event-is-recurring');
+            const recurringPatternSelect = document.getElementById(
+                'event-recurring-pattern'
+            );
+            const isRecurring = isRecurringCheckbox
+                ? isRecurringCheckbox.checked
+                : false;
+            const recurringPattern =
+                isRecurring && recurringPatternSelect
+                    ? recurringPatternSelect.value
+                    : null;
+
             // 调用后端API创建会议
             const meetingData = {
                 title: eventData.title,
@@ -1022,7 +1154,8 @@ class CalendarManager {
                 type: eventData.type,
                 date: meetingDate.toISOString(),
                 duration: eventData.duration,
-                isRecurring: false
+                isRecurring: isRecurring,
+                recurringPattern: recurringPattern
             };
 
             const newMeeting = await apiClient.createMeeting(meetingData);
@@ -1062,8 +1195,18 @@ class CalendarManager {
             const backendStatus = statusMap[attendance] || 'pending';
 
             // 调用后端API更新出席状态
+            // 对于重复会议，需要传入实例日期以区分不同的实例
             const meetingId = event.meetingId || parseInt(eventId);
-            await apiClient.updateAttendance(meetingId, backendStatus);
+            const instanceDate =
+                event.meeting_date || event.date
+                    ? new Date(event.meeting_date || event.date)
+                    : null;
+            await apiClient.updateAttendance(
+                meetingId,
+                backendStatus,
+                null,
+                instanceDate ? instanceDate.toISOString() : null
+            );
 
             // 重新加载会议数据
             await this.loadMeetings();
