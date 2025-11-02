@@ -70,7 +70,24 @@ class ApiClient {
 
             // 处理错误
             if (!response.ok) {
-                throw new Error(result.detail || result.message || '请求失败');
+                // 如果是 401 未授权错误，清除 token 并提示重新登录
+                if (response.status === 401) {
+                    console.warn('认证失败，清除本地 token');
+                    this.token = null;
+                    await window.electronAPI?.deleteStoreValue('auth_token');
+                    await window.electronAPI?.deleteStoreValue('user_info');
+
+                    // 触发登出事件，让应用显示登录界面
+                    if (window.app && window.app.authManager) {
+                        window.app.authManager.showAuth();
+                    }
+                }
+
+                throw new Error(
+                    result.detail ||
+                        result.message ||
+                        `请求失败 (${response.status})`
+                );
             }
 
             return result;

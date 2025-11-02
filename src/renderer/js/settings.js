@@ -1,5 +1,6 @@
 // 导入国际化管理器
 import { i18n } from '../i18n/i18n.js';
+import { apiClient } from './api.js';
 
 // 设置管理器
 class SettingsManager {
@@ -506,8 +507,31 @@ class SettingsManager {
                 // 可选：压缩图片
                 const compressedData = await this.compressImage(base64Data);
 
+                // 先保存到本地
                 this.settings.avatar = compressedData;
                 await this.saveSettings();
+
+                // 保存到数据库
+                try {
+                    await apiClient.updateUser({
+                        avatar: compressedData
+                    });
+
+                    // 更新后端返回的用户信息（包含头像）
+                    const updatedUserInfo = await apiClient.fetchUserInfo();
+                    if (updatedUserInfo) {
+                        await window.electronAPI?.setStoreValue(
+                            'user_info',
+                            updatedUserInfo
+                        );
+                    }
+                } catch (apiError) {
+                    console.error('保存头像到数据库失败:', apiError);
+                    this.app.showNotification(
+                        '保存头像到服务器失败，但已保存到本地',
+                        'warning'
+                    );
+                }
 
                 // 更新预览
                 const previewImg =
@@ -581,8 +605,31 @@ class SettingsManager {
             return;
         }
 
+        // 先更新本地设置
         this.settings.avatar = null;
         await this.saveSettings();
+
+        // 同步删除数据库中的头像
+        try {
+            await apiClient.updateUser({
+                avatar: null
+            });
+
+            // 更新后端返回的用户信息
+            const updatedUserInfo = await apiClient.fetchUserInfo();
+            if (updatedUserInfo) {
+                await window.electronAPI?.setStoreValue(
+                    'user_info',
+                    updatedUserInfo
+                );
+            }
+        } catch (apiError) {
+            console.error('删除头像到数据库失败:', apiError);
+            this.app.showNotification(
+                '删除头像到服务器失败，但已从本地移除',
+                'warning'
+            );
+        }
 
         // 更新导航栏头像
         this.updateNavigationAvatar();
