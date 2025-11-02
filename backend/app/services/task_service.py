@@ -2,8 +2,8 @@
 任务服务
 """
 
-from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, func
+from sqlalchemy.orm import Session  # pyright: ignore[reportMissingImports]
+from sqlalchemy import and_, or_, func  # pyright: ignore[reportMissingImports]
 from typing import Optional, List
 import logging
 import json
