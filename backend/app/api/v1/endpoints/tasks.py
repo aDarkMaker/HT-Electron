@@ -2,8 +2,8 @@
 任务API端点
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, Depends, HTTPException, status, Query  # pyright: ignore[reportMissingImports]
+from sqlalchemy.orm import Session  # pyright: ignore[reportMissingImports]
 from typing import List, Optional
 import json
 
@@ -30,9 +30,23 @@ async def create_task(
     
     try:
         task = task_service.create_task(task_data, current_user.id)
-        # 添加发布者姓名
-        task.publisher_name = current_user.name
-        return task
+        task_dict = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+            "priority": task.priority,
+            "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+            "deadline": task.deadline.isoformat() if task.deadline else None,
+            "tags": json.loads(task.tags) if task.tags else [],
+            "accepted_count": task.accepted_count,
+            "max_accept_count": task.max_accept_count,
+            "publisher_id": task.publisher_id,
+            "publisher_name": current_user.name,
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None
+        }
+        return task_dict
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -122,11 +136,28 @@ async def get_my_tasks(
     task_service = TaskService(db)
     tasks = task_service.get_user_tasks(current_user.id, skip=skip, limit=limit)
     
-    # 添加发布者姓名
+    # 添加发布者姓名并转换数据格式
+    result = []
     for task in tasks:
-        task.publisher_name = current_user.name
+        task_dict = {
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+            "priority": task.priority,
+            "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+            "deadline": task.deadline.isoformat() if task.deadline else None,
+            "tags": json.loads(task.tags) if task.tags else [],
+            "accepted_count": task.accepted_count,
+            "max_accept_count": task.max_accept_count,
+            "publisher_id": task.publisher_id,
+            "publisher_name": current_user.name,
+            "created_at": task.created_at.isoformat() if task.created_at else None,
+            "updated_at": task.updated_at.isoformat() if task.updated_at else None
+        }
+        result.append(task_dict)
     
-    return tasks
+    return result
 
 
 @router.get("/accepted", response_model=List[dict])
@@ -188,10 +219,24 @@ async def get_task(
             detail="任务不存在"
         )
     
-    # 添加发布者姓名
-    task.publisher_name = task.publisher.name
-    
-    return task
+    # 构建响应数据，解析 tags JSON 字符串为列表
+    task_dict = {
+        "id": task.id,
+        "title": task.title,
+        "description": task.description,
+        "type": task.type.value if hasattr(task.type, 'value') else str(task.type),
+        "priority": task.priority,
+        "status": task.status.value if hasattr(task.status, 'value') else str(task.status),
+        "deadline": task.deadline.isoformat() if task.deadline else None,
+        "tags": json.loads(task.tags) if task.tags else [],
+        "accepted_count": task.accepted_count,
+        "max_accept_count": task.max_accept_count,
+        "publisher_id": task.publisher_id,
+        "publisher_name": task.publisher.name if task.publisher else "未知",
+        "created_at": task.created_at.isoformat() if task.created_at else None,
+        "updated_at": task.updated_at.isoformat() if task.updated_at else None
+    }
+    return task_dict
 
 
 @router.put("/{task_id}", response_model=TaskResponse)
@@ -221,8 +266,24 @@ async def update_task(
     
     try:
         updated_task = task_service.update_task(task_id, task_data)
-        updated_task.publisher_name = current_user.name
-        return updated_task
+        # 构建响应数据，解析 tags JSON 字符串为列表
+        task_dict = {
+            "id": updated_task.id,
+            "title": updated_task.title,
+            "description": updated_task.description,
+            "type": updated_task.type.value if hasattr(updated_task.type, 'value') else str(updated_task.type),
+            "priority": updated_task.priority,
+            "status": updated_task.status.value if hasattr(updated_task.status, 'value') else str(updated_task.status),
+            "deadline": updated_task.deadline.isoformat() if updated_task.deadline else None,
+            "tags": json.loads(updated_task.tags) if updated_task.tags else [],
+            "accepted_count": updated_task.accepted_count,
+            "max_accept_count": updated_task.max_accept_count,
+            "publisher_id": updated_task.publisher_id,
+            "publisher_name": current_user.name,
+            "created_at": updated_task.created_at.isoformat() if updated_task.created_at else None,
+            "updated_at": updated_task.updated_at.isoformat() if updated_task.updated_at else None
+        }
+        return task_dict
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

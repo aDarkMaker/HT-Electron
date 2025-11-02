@@ -14,7 +14,8 @@ from app.core.database import get_db
 from app.services.user_service import UserService
 
 # JWT令牌方案
-security = HTTPBearer()
+# auto_error=False 允许我们手动处理认证错误，返回更清晰的错误信息
+security = HTTPBearer(auto_error=False)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -43,25 +44,37 @@ def verify_token(token: str) -> Optional[str]:
 
 
 def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ):
     """获取当前用户"""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail="未提供认证令牌或认证令牌无效，请先登录",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    
+    # 如果没有提供认证头
+    if credentials is None:
+        raise credentials_exception
     
     token = credentials.credentials
     username = verify_token(token)
     if username is None:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="认证令牌无效或已过期，请重新登录",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
     user_service = UserService(db)
     user = user_service.get_user_by_username(username)
     if user is None:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="用户不存在",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
     return user
 
