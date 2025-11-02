@@ -251,26 +251,11 @@ class CalendarManager {
     getEventsForDate(date) {
         const events = [];
 
-        // 从任务中获取事件
-        this.app.tasks.forEach((task) => {
-            if (
-                task.deadline &&
-                this.isSameDate(new Date(task.deadline), date)
-            ) {
-                events.push({
-                    id: task.id,
-                    title: task.title,
-                    type: 'deadline',
-                    description: task.description,
-                    date: task.deadline
-                });
-            }
-        });
-
-        // 从我的任务中获取事件
+        // 只从已接取的任务中获取事件（不显示未接取的任务，也不显示已完成的任务）
         this.app.myTasks.forEach((task) => {
             if (
                 task.deadline &&
+                task.status !== 'completed' && // 排除已完成的任务
                 this.isSameDate(new Date(task.deadline), date)
             ) {
                 events.push({
@@ -278,7 +263,8 @@ class CalendarManager {
                     title: task.title,
                     type: 'task',
                     description: task.description,
-                    date: task.deadline
+                    date: task.deadline,
+                    isTask: true // 标记这是任务事件
                 });
             }
         });
@@ -343,18 +329,17 @@ class CalendarManager {
         console.log('Found event in calendarEvents:', event);
 
         if (!event) {
-            // 从任务中查找
-            const task = [...this.app.tasks, ...this.app.myTasks].find(
-                (t) => t.id === eventId
-            );
+            // 从已接取的任务中查找（只显示已接取的任务）
+            const task = this.app.myTasks.find((t) => t.id === eventId);
             console.log('Found task:', task);
             if (task) {
                 event = {
                     id: task.id,
                     title: task.title,
-                    type: task.deadline ? 'deadline' : 'task',
+                    type: 'task',
                     description: task.description,
-                    date: task.deadline || task.createdAt
+                    date: task.deadline || task.createdAt,
+                    isTask: true // 标记这是任务事件
                 };
             }
         }
@@ -743,10 +728,22 @@ class CalendarManager {
                         <img src="Assets/Icons/refresh.svg" width="16" height="16" alt="修改" />
                         修改状态
                     </button>
+                    <button class="btn btn-danger" id="delete-event">
+                        <img src="Assets/Icons/delete.svg" width="16" height="16" alt="删除" />
+                        删除
+                    </button>
                 `;
             }
+        } else if (event.type === 'task' && event.isTask) {
+            // 任务类型的事件（来自已接取的任务），不显示删除按钮
+            // 因为任务应该通过任务管理界面管理，而不是通过日历删除
+            return `
+                <div class="event-note">
+                    <p>这是任务截止日期，请在任务管理界面进行操作</p>
+                </div>
+            `;
         } else {
-            // 其他事件操作按钮（任务、截止日期等）
+            // 其他事件操作按钮（自定义事件等）
             return `
                 <button class="btn btn-secondary" id="edit-event">
                     <img src="Assets/Icons/setting.svg" width="16" height="16" alt="编辑" />
@@ -811,12 +808,35 @@ class CalendarManager {
 
     async deleteEvent(eventId) {
         try {
-            // 从日历事件中删除
-            const eventIndex = this.app.calendarEvents.findIndex(
-                (e) => e.id === eventId
-            );
-            if (eventIndex !== -1) {
-                this.app.calendarEvents.splice(eventIndex, 1);
+            // 查找事件以确定类型
+            let event = this.app.calendarEvents.find((e) => e.id === eventId);
+
+            if (event) {
+                // 如果是会议/事件，调用后端API删除
+                if (event.id && event.meeting_date) {
+                    try {
+                        await apiClient.deleteMeeting(eventId);
+                        this.app.showNotification('事件已删除', 'success');
+                    } catch (apiError) {
+                        console.error('删除会议失败:', apiError);
+                        throw apiError;
+                    }
+                }
+
+                // 从日历事件中删除
+                const eventIndex = this.app.calendarEvents.findIndex(
+                    (e) => e.id === eventId
+                );
+                if (eventIndex !== -1) {
+                    this.app.calendarEvents.splice(eventIndex, 1);
+                }
+            } else {
+                // 如果是任务类型的事件（从任务中生成），提示用户通过任务管理删除
+                this.app.showNotification(
+                    '任务事件需要通过任务管理界面删除',
+                    'info'
+                );
+                return;
             }
 
             // 保存数据
@@ -825,11 +845,14 @@ class CalendarManager {
             // 重新渲染日历
             this.renderCalendar();
 
-            // 显示成功消息
-            this.app.showNotification('事件已删除', 'success');
+            // 显示成功消息（如果没有在上面显示过）
+            if (!event || !event.meeting_date) {
+                this.app.showNotification('事件已删除', 'success');
+            }
         } catch (error) {
             console.error('删除事件失败:', error);
-            this.app.showNotification('删除事件失败，请重试', 'error');
+            const errorMsg = error.message || '删除事件失败，请重试';
+            this.app.showNotification(errorMsg, 'error');
         }
     }
 
