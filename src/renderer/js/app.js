@@ -273,6 +273,11 @@ class HXKTerminalApp {
             this.settingsManager.updateUserDisplay();
         }
 
+        // 确保导航栏显示正确的用户信息（包括头像）
+        if (this.navigation) {
+            this.navigation.updateUserInfo();
+        }
+
         // 初始化自定义下拉框
         initCustomSelects();
 
@@ -322,7 +327,22 @@ class HXKTerminalApp {
                 if (this.settingsManager) {
                     this.settingsManager.renderSettings();
                     // 重新初始化下拉框（因为渲染settings会重新生成HTML）
-                    setTimeout(() => initCustomSelects(), 0);
+                    setTimeout(() => {
+                        // 先清理旧的实例
+                        document
+                            .querySelectorAll('.custom-select')
+                            .forEach((el) => {
+                                el.remove();
+                            });
+                        // 移除初始化标记，允许重新初始化
+                        document
+                            .querySelectorAll('select')
+                            .forEach((select) => {
+                                delete select.dataset.customSelectInitialized;
+                            });
+                        // 重新初始化
+                        initCustomSelects();
+                    }, 0);
                 }
                 break;
         }
@@ -403,13 +423,31 @@ class HXKTerminalApp {
     }
 
     // 获取当前用户信息
-    getCurrentUser() {
+    async getCurrentUser() {
         // 优先从authManager获取用户信息
         if (this.authManager && this.authManager.isUserAuthenticated()) {
             const authUser = this.authManager.getCurrentUser();
+
+            // 优先使用后端返回的头像，如果没有则使用默认头像
+            let avatar = 'Assets/Icons/user.svg';
+            if (authUser?.avatar) {
+                avatar = authUser.avatar;
+            } else {
+                // 尝试从存储中获取用户信息
+                try {
+                    const storedUserInfo =
+                        await window.electronAPI?.getStoreValue('user_info');
+                    if (storedUserInfo?.avatar) {
+                        avatar = storedUserInfo.avatar;
+                    }
+                } catch (error) {
+                    console.warn('获取存储的用户信息失败:', error);
+                }
+            }
+
             return {
-                name: authUser?.username || '用户',
-                avatar: 'Assets/Icons/user.svg',
+                name: authUser?.username || authUser?.name || '用户',
+                avatar: avatar,
                 role: authUser?.role || 'member'
             };
         }

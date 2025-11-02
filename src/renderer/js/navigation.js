@@ -134,8 +134,9 @@ class NavigationManager {
         }
     }
 
-    updateUserInfo() {
-        const user = this.app.getCurrentUser();
+    async updateUserInfo() {
+        // getCurrentUser可能是异步的，需要await
+        const user = await this.app.getCurrentUser();
         const userNameElement = document.getElementById('user-name');
         const userAvatarImg = document.querySelector('.user-avatar img');
 
@@ -144,7 +145,23 @@ class NavigationManager {
         }
 
         if (userAvatarImg) {
-            userAvatarImg.src = user.avatar;
+            // 确保头像URL有效
+            if (user.avatar && user.avatar !== 'Assets/Icons/user.svg') {
+                userAvatarImg.src = user.avatar;
+            } else {
+                // 尝试从存储中获取最新的用户信息
+                try {
+                    const storedUserInfo =
+                        await window.electronAPI?.getStoreValue('user_info');
+                    if (storedUserInfo?.avatar) {
+                        userAvatarImg.src = storedUserInfo.avatar;
+                    } else {
+                        userAvatarImg.src = 'Assets/Icons/user.svg';
+                    }
+                } catch (error) {
+                    userAvatarImg.src = user.avatar || 'Assets/Icons/user.svg';
+                }
+            }
         }
     }
 

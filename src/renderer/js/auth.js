@@ -41,25 +41,76 @@ class AuthManager {
 
                     if (currentUser) {
                         this.isAuthenticated = true;
-                        this.currentUser = currentUser;
+                        // 更新用户信息（包括最新的头像）
+                        this.currentUser = {
+                            id: currentUser.id,
+                            username: currentUser.username,
+                            name: currentUser.name,
+                            email: currentUser.email,
+                            qq: currentUser.qq,
+                            avatar: currentUser.avatar, // 确保使用最新的头像
+                            role: currentUser.role,
+                            created_at: currentUser.created_at
+                        };
+                        // 确保存储的用户信息是最新的
+                        await window.electronAPI.setStoreValue(
+                            'user_info',
+                            this.currentUser
+                        );
                         this.showApp();
                     } else {
                         // Token 无效，清除
+                        console.warn('⚠️ Token验证失败，用户信息为空');
                         await apiClient.logout();
                         this.showAuth();
                     }
                 } catch (error) {
-                    // Token 已过期或无效
-                    console.error('Token验证失败:', error);
-                    await apiClient.logout();
-                    this.showAuth();
+                    // Token 已过期或无效，但不一定是网络错误
+                    // 只有在确认是401错误时才清除token
+                    if (error.message && error.message.includes('401')) {
+                        console.warn('⚠️ Token已过期或无效，需要重新登录');
+                        await apiClient.logout();
+                        this.showAuth();
+                    } else {
+                        // 可能是网络错误，保留token以便下次重试
+                        console.error(
+                            '❌ Token验证失败（可能是网络问题）:',
+                            error
+                        );
+                        // 如果有缓存的用户信息，仍然显示应用
+                        if (userInfo) {
+                            console.log('📦 使用缓存的用户信息');
+                            this.isAuthenticated = true;
+                            this.currentUser = userInfo;
+                            this.showApp();
+                        } else {
+                            this.showAuth();
+                        }
+                    }
                 }
             } else {
                 this.showAuth();
             }
         } catch (error) {
             console.error('❌ 检查登录状态失败:', error);
-            this.showAuth();
+            // 如果有缓存的token和用户信息，尝试使用
+            try {
+                const token =
+                    await window.electronAPI.getStoreValue('auth_token');
+                const userInfo =
+                    await window.electronAPI.getStoreValue('user_info');
+                if (token && userInfo) {
+                    console.log('📦 使用缓存的认证信息');
+                    this.isAuthenticated = true;
+                    this.currentUser = userInfo;
+                    apiClient.token = token;
+                    this.showApp();
+                } else {
+                    this.showAuth();
+                }
+            } catch (fallbackError) {
+                this.showAuth();
+            }
         }
     }
 
@@ -203,24 +254,32 @@ class AuthManager {
             const userInfo = await apiClient.fetchUserInfo();
 
             if (userInfo) {
-                // 保存用户信息
+                // 保存用户信息（确保头像也被保存）
                 this.currentUser = {
                     id: userInfo.id,
                     username: userInfo.username,
                     name: userInfo.name,
                     email: userInfo.email,
                     qq: userInfo.qq,
-                    avatar: userInfo.avatar,
-                    role: userInfo.role
+                    avatar: userInfo.avatar || null, // 确保头像字段存在
+                    role: userInfo.role,
+                    created_at: userInfo.created_at
                 };
 
-                await this.setAuthenticated(userInfo);
+                await this.setAuthenticated(this.currentUser);
                 this.showSuccess('login', '登录成功！');
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     this.showApp();
                     if (window.app && !window.app.taskManager) {
-                        window.app.initializeAuthenticatedUser();
+                        await window.app.initializeAuthenticatedUser();
+                        // 确保UI更新显示正确的头像
+                        if (window.app.navigation) {
+                            await window.app.navigation.updateUserInfo();
+                        }
+                        if (window.app.settingsManager) {
+                            window.app.settingsManager.updateUserDisplay();
+                        }
                     }
                 }, 500);
             }
@@ -286,17 +345,25 @@ class AuthManager {
                     name: userInfo.name,
                     email: userInfo.email,
                     qq: userInfo.qq,
-                    avatar: userInfo.avatar,
-                    role: userInfo.role
+                    avatar: userInfo.avatar || null, // 确保头像字段存在
+                    role: userInfo.role,
+                    created_at: userInfo.created_at
                 };
 
-                await this.setAuthenticated(userInfo);
+                await this.setAuthenticated(this.currentUser);
                 this.showSuccess('register', '注册成功！');
 
-                setTimeout(() => {
+                setTimeout(async () => {
                     this.showApp();
                     if (window.app && !window.app.taskManager) {
-                        window.app.initializeAuthenticatedUser();
+                        await window.app.initializeAuthenticatedUser();
+                        // 确保UI更新显示正确的头像
+                        if (window.app.navigation) {
+                            await window.app.navigation.updateUserInfo();
+                        }
+                        if (window.app.settingsManager) {
+                            window.app.settingsManager.updateUserDisplay();
+                        }
                     }
                 }, 500);
             }

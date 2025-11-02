@@ -1,6 +1,7 @@
 // 导入国际化管理器
 import { i18n } from '../i18n/i18n.js';
 import { apiClient } from './api.js';
+import { initCustomSelects } from './custom-select.js';
 
 // 设置管理器
 class SettingsManager {
@@ -35,6 +36,18 @@ class SettingsManager {
 
                 if (savedSettings) {
                     this.settings = { ...this.settings, ...savedSettings };
+                }
+
+                // 同步用户信息中的头像（如果存在）
+                try {
+                    const userInfo =
+                        await window.electronAPI.getStoreValue('user_info');
+                    if (userInfo && userInfo.avatar) {
+                        // 如果用户信息中有头像，优先使用用户信息中的头像
+                        this.settings.avatar = userInfo.avatar;
+                    }
+                } catch (error) {
+                    console.warn('同步用户信息头像失败:', error);
                 }
             }
         } catch (error) {
@@ -474,10 +487,25 @@ class SettingsManager {
         }
     }
 
-    updateNavigationAvatar() {
+    async updateNavigationAvatar() {
         const navAvatarImg = document.querySelector('.user-avatar img');
         if (navAvatarImg) {
-            const avatarSrc = this.settings.avatar || 'Assets/Icons/user.svg';
+            // 优先使用后端返回的头像
+            let avatarSrc = 'Assets/Icons/user.svg';
+            try {
+                const storedUserInfo =
+                    await window.electronAPI?.getStoreValue('user_info');
+                if (storedUserInfo?.avatar) {
+                    avatarSrc = storedUserInfo.avatar;
+                } else if (this.settings.avatar) {
+                    avatarSrc = this.settings.avatar;
+                }
+            } catch (error) {
+                console.warn('获取用户信息失败:', error);
+                if (this.settings.avatar) {
+                    avatarSrc = this.settings.avatar;
+                }
+            }
             navAvatarImg.src = avatarSrc;
         }
     }
@@ -545,6 +573,22 @@ class SettingsManager {
 
                 // 重新渲染设置以显示移除按钮
                 this.renderSettings();
+
+                // 重新初始化自定义下拉框（在renderSettings之后）
+                setTimeout(() => {
+                    // 先清理旧的实例
+                    document
+                        .querySelectorAll('.custom-select')
+                        .forEach((el) => {
+                            el.remove();
+                        });
+                    // 移除初始化标记，允许重新初始化
+                    document.querySelectorAll('select').forEach((select) => {
+                        delete select.dataset.customSelectInitialized;
+                    });
+                    // 重新初始化
+                    initCustomSelects();
+                }, 50);
 
                 this.app.showNotification('头像已更新', 'success');
             };
@@ -636,6 +680,20 @@ class SettingsManager {
 
         // 重新渲染设置
         this.renderSettings();
+
+        // 重新初始化自定义下拉框（在renderSettings之后）
+        setTimeout(() => {
+            // 先清理旧的实例
+            document.querySelectorAll('.custom-select').forEach((el) => {
+                el.remove();
+            });
+            // 移除初始化标记，允许重新初始化
+            document.querySelectorAll('select').forEach((select) => {
+                delete select.dataset.customSelectInitialized;
+            });
+            // 重新初始化
+            initCustomSelects();
+        }, 50);
 
         this.app.showNotification('头像已移除', 'success');
     }
