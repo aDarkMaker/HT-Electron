@@ -61,6 +61,14 @@ class TaskManager {
         // 模态框事件
         this.bindModalEvents();
 
+        // 监听任务类型变化，显示/隐藏人数上限输入框
+        const taskTypeSelect = document.getElementById('task-type');
+        if (taskTypeSelect) {
+            taskTypeSelect.addEventListener('change', () => {
+                this.toggleMaxAcceptCountField();
+            });
+        }
+
         // 菜单事件
         if (window.electronAPI) {
             window.electronAPI.onMenuNewTask(() => {
@@ -178,19 +186,27 @@ class TaskManager {
             return;
         }
 
-        console.log('=== 渲染我的任务 ===');
-        console.log('容器:', container);
-        console.log('我的任务数量:', this.app.myTasks.length);
-        console.log('我的任务列表:', this.app.myTasks);
+        let showCompletedTasks = true;
+        if (this.app && this.app.settingsManager) {
+            const settings = this.app.settingsManager.getSettings();
+            showCompletedTasks = settings.showCompletedTasks !== false;
+        }
 
-        if (this.app.myTasks.length === 0) {
+        let tasksToRender = this.app.myTasks;
+        if (!showCompletedTasks) {
+            tasksToRender = this.app.myTasks.filter(
+                (task) => task.status !== 'completed'
+            );
+        }
+
+        if (tasksToRender.length === 0) {
             console.log('显示空状态');
             container.innerHTML = this.createEmptyState('暂无我的任务', 'flag');
             return;
         }
 
         console.log('开始渲染任务卡片');
-        const taskCards = this.app.myTasks
+        const taskCards = tasksToRender
             .map((task) => this.createTaskCard(task, 'my-tasks'))
             .join('');
 
@@ -390,6 +406,31 @@ class TaskManager {
             document.body.style.overflow = 'hidden';
             // 初始化模态框中的自定义下拉框
             setTimeout(() => initCustomSelects(), 0);
+            // 初始化人数上限字段显示状态
+            this.toggleMaxAcceptCountField();
+        }
+    }
+
+    toggleMaxAcceptCountField() {
+        const taskTypeSelect = document.getElementById('task-type');
+        const maxAcceptCountGroup = document.getElementById(
+            'max-accept-count-group'
+        );
+        const maxAcceptCountInput = document.getElementById(
+            'task-max-accept-count'
+        );
+
+        if (taskTypeSelect && maxAcceptCountGroup && maxAcceptCountInput) {
+            const isTeam = taskTypeSelect.value === 'team';
+            maxAcceptCountGroup.style.display = isTeam ? 'block' : 'none';
+            if (!isTeam) {
+                maxAcceptCountInput.value = '1';
+            } else if (
+                !maxAcceptCountInput.value ||
+                maxAcceptCountInput.value === '1'
+            ) {
+                maxAcceptCountInput.value = '3';
+            }
         }
     }
 
@@ -413,12 +454,32 @@ class TaskManager {
         const form = document.getElementById('publish-task-form');
         if (!form) return;
 
+        const taskType = document.getElementById('task-type').value;
+        const maxAcceptCountInput = document.getElementById(
+            'task-max-accept-count'
+        );
+
+        // 获取人数上限：团队任务从输入框读取，个人任务固定为1
+        let maxAcceptCount = 1;
+        if (taskType === 'team' && maxAcceptCountInput) {
+            const inputValue = parseInt(maxAcceptCountInput.value);
+            if (inputValue && inputValue >= 1 && inputValue <= 100) {
+                maxAcceptCount = inputValue;
+            } else {
+                this.app.showNotification(
+                    '人数上限必须是1-100之间的数字',
+                    'error'
+                );
+                return;
+            }
+        }
+
         const taskData = {
             title: document.getElementById('task-title').value.trim(),
             description: document
                 .getElementById('task-description')
                 .value.trim(),
-            type: document.getElementById('task-type').value,
+            type: taskType,
             priority: parseInt(document.getElementById('task-priority').value),
             deadline: document.getElementById('task-deadline').value
                 ? new Date(
@@ -430,8 +491,7 @@ class TaskManager {
                 .value.split(',')
                 .map((tag) => tag.trim())
                 .filter((tag) => tag),
-            maxAcceptCount:
-                document.getElementById('task-type').value === 'team' ? 3 : 1
+            maxAcceptCount: maxAcceptCount
         };
 
         // 验证表单

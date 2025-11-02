@@ -430,9 +430,15 @@ class SettingsManager {
             'show-completed-toggle'
         );
         if (showCompletedToggle) {
-            showCompletedToggle.addEventListener('change', (event) => {
+            showCompletedToggle.addEventListener('change', async (event) => {
                 this.settings.showCompletedTasks = event.target.checked;
-                this.saveSettings();
+                await this.saveSettings();
+
+                // 触发任务列表重新渲染（如果任务管理器已初始化）
+                if (this.app && this.app.taskManager) {
+                    this.app.taskManager.renderTasks();
+                }
+
                 this.app.showNotification('显示设置已更新', 'success');
             });
         }

@@ -349,9 +349,12 @@ class HXKTerminalApp {
     }
 
     updateTaskCounts() {
-        // 现在 tasks 数组中的任务都是可用的（个人任务接取后会被移除，团队任务会保留）
         const availableCount = this.tasks.length;
-        const myTasksCount = this.myTasks.length;
+
+        const myTasksCount = this.myTasks.filter(
+            (task) => task.status !== 'completed'
+        ).length;
+
         const totalCount = availableCount + myTasksCount;
 
         // 更新计数并处理显示/隐藏

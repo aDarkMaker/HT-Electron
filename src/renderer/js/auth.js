@@ -18,7 +18,17 @@ class AuthManager {
         this.authContainer = document.getElementById('auth-container');
         this.appContainer = document.getElementById('app');
 
-        // 检查登录状态
+        // 初始化时确保容器状态正确（防止重叠）
+        if (this.authContainer) {
+            this.authContainer.style.display = 'none';
+            this.authContainer.style.visibility = 'hidden';
+        }
+        if (this.appContainer) {
+            this.appContainer.style.display = 'none';
+            this.appContainer.style.visibility = 'hidden';
+        }
+
+        // 检查登录状态（会调用showAuth或showApp来正确设置显示状态）
         await this.checkAuthStatus();
 
         // 绑定事件
@@ -116,15 +126,26 @@ class AuthManager {
 
     showAuth() {
         this.isAuthenticated = false;
-        if (this.authContainer) {
-            this.authContainer.style.display = 'flex';
-        }
+
+        // 先隐藏应用容器和标题栏
         if (this.appContainer) {
             this.appContainer.style.display = 'none';
+            this.appContainer.style.visibility = 'hidden';
         }
-        document
-            .getElementById('custom-titlebar')
-            ?.style.setProperty('display', 'none');
+
+        const customTitlebar = document.getElementById('custom-titlebar');
+        if (customTitlebar) {
+            customTitlebar.style.display = 'none';
+            customTitlebar.style.visibility = 'hidden';
+        }
+
+        // 然后显示认证容器（延迟确保前面的隐藏已完成）
+        setTimeout(() => {
+            if (this.authContainer) {
+                this.authContainer.style.display = 'flex';
+                this.authContainer.style.visibility = 'visible';
+            }
+        }, 0);
 
         // 确保显示登录界面而不是注册界面
         const loginContainer = document.getElementById('login-container');
@@ -153,19 +174,28 @@ class AuthManager {
 
     showApp() {
         this.isAuthenticated = true;
+
+        // 先隐藏认证容器
         if (this.authContainer) {
             this.authContainer.style.display = 'none';
-        }
-        if (this.appContainer) {
-            this.appContainer.style.display = 'flex';
+            this.authContainer.style.visibility = 'hidden';
         }
 
-        // 只在 Windows 上显示自定义标题栏，Mac 使用原生标题栏
-        const customTitlebar = document.getElementById('custom-titlebar');
-        if (customTitlebar) {
-            const isMac = document.body.classList.contains('darwin');
-            customTitlebar.style.display = isMac ? 'none' : 'flex';
-        }
+        // 然后显示应用容器和标题栏（延迟确保前面的隐藏已完成）
+        setTimeout(() => {
+            if (this.appContainer) {
+                this.appContainer.style.display = 'flex';
+                this.appContainer.style.visibility = 'visible';
+            }
+
+            // 只在 Windows 上显示自定义标题栏，Mac 使用原生标题栏
+            const customTitlebar = document.getElementById('custom-titlebar');
+            if (customTitlebar) {
+                const isMac = document.body.classList.contains('darwin');
+                customTitlebar.style.display = isMac ? 'none' : 'flex';
+                customTitlebar.style.visibility = isMac ? 'hidden' : 'visible';
+            }
+        }, 0);
 
         // 不要在这里调用 initializeUI，应该等待 initializeAuthenticatedUser() 完成后自动调用
         // initializeAuthenticatedUser() 中会调用 initializeUI()

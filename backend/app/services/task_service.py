@@ -174,11 +174,30 @@ class TaskService:
         # 更新任务状态
         task = self.get_task_by_id(task_id)
         if task:
-            task.accepted_count -= 1
+            # 不减少accepted_count，因为需要统计完成情况
+            # task.accepted_count -= 1
             
-            # 如果是个人任务，标记为已完成
+            # 检查任务完成情况
             if task.type == TaskType.PERSONAL:
+                # 个人任务：一个人完成就标记为已完成
                 task.status = TaskStatus.COMPLETED
+            elif task.type == TaskType.TEAM:
+                # 团队任务：需要检查所有接取任务的人是否都完成了
+                # 获取所有接取记录
+                all_acceptances = self.db.query(TaskAcceptance).filter(
+                    TaskAcceptance.task_id == task_id
+                ).all()
+                
+                # 检查是否所有人都完成了
+                all_completed = all(
+                    acc.status == TaskStatus.COMPLETED 
+                    for acc in all_acceptances
+                )
+                
+                if all_completed:
+                    # 所有接取的人都完成了，标记任务为已完成
+                    task.status = TaskStatus.COMPLETED
+                    logger.info(f"团队任务 {task.title} 所有成员已完成，任务标记为完成")
         
         self.db.commit()
         

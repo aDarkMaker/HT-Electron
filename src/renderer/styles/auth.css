@@ -1,12 +1,15 @@
 /* 登录/注册页面样式 */
 .auth-container {
-    display: flex;
+    display: none; /* 默认隐藏，由JS控制显示 */
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     width: 100vw;
     background: linear-gradient(135deg, #a8bbe0 0%, #c2a8d8 100%);
-    position: relative;
+    position: fixed; /* 使用fixed确保不会与其他容器重叠 */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* 确保在应用容器之上 */
     overflow: hidden;
 }
 

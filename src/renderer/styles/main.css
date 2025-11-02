@@ -59,10 +59,12 @@ body.darwin {
 }
 
 #app {
-    display: flex;
+    display: none; /* 默认隐藏，由JS控制显示 */
     height: 100vh;
     width: 100vw;
     margin-top: 0;
+    position: relative;
+    z-index: 1; /* 低于auth-container */
 }
 
 /* 确保应用不会溢出标题栏 */
