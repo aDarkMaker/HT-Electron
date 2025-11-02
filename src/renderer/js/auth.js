@@ -67,6 +67,16 @@ class AuthManager {
                             'user_info',
                             this.currentUser
                         );
+
+                        if (
+                            window.app?.settingsManager &&
+                            this.currentUser?.name
+                        ) {
+                            window.app.settingsManager.settings.username =
+                                this.currentUser.name;
+                            await window.app.settingsManager.saveSettings();
+                        }
+
                         this.showApp();
                     } else {
                         // Token 无效，清除
@@ -92,6 +102,13 @@ class AuthManager {
                             console.log('📦 使用缓存的用户信息');
                             this.isAuthenticated = true;
                             this.currentUser = userInfo;
+
+                            if (window.app?.settingsManager && userInfo?.name) {
+                                window.app.settingsManager.settings.username =
+                                    userInfo.name;
+                                await window.app.settingsManager.saveSettings();
+                            }
+
                             this.showApp();
                         } else {
                             this.showAuth();
@@ -114,6 +131,14 @@ class AuthManager {
                     this.isAuthenticated = true;
                     this.currentUser = userInfo;
                     apiClient.token = token;
+
+                    // 同步用户信息到设置（如果settingsManager已初始化）
+                    if (window.app?.settingsManager && userInfo?.name) {
+                        window.app.settingsManager.settings.username =
+                            userInfo.name;
+                        await window.app.settingsManager.saveSettings();
+                    }
+
                     this.showApp();
                 } else {
                     this.showAuth();
@@ -303,7 +328,15 @@ class AuthManager {
                     this.showApp();
                     if (window.app && !window.app.taskManager) {
                         await window.app.initializeAuthenticatedUser();
-                        // 确保UI更新显示正确的头像
+
+                        // 同步用户信息到设置（包括昵称）
+                        if (window.app.settingsManager && userInfo?.name) {
+                            window.app.settingsManager.settings.username =
+                                userInfo.name;
+                            await window.app.settingsManager.saveSettings();
+                        }
+
+                        // 确保UI更新显示正确的头像和昵称
                         if (window.app.navigation) {
                             await window.app.navigation.updateUserInfo();
                         }
@@ -387,7 +420,15 @@ class AuthManager {
                     this.showApp();
                     if (window.app && !window.app.taskManager) {
                         await window.app.initializeAuthenticatedUser();
-                        // 确保UI更新显示正确的头像
+
+                        // 同步用户信息到设置（包括昵称）
+                        if (window.app.settingsManager && userInfo?.name) {
+                            window.app.settingsManager.settings.username =
+                                userInfo.name;
+                            await window.app.settingsManager.saveSettings();
+                        }
+
+                        // 确保UI更新显示正确的头像和昵称
                         if (window.app.navigation) {
                             await window.app.navigation.updateUserInfo();
                         }

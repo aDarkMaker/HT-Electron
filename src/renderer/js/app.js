@@ -59,6 +59,9 @@ class HXKTerminalApp {
         this.calendarManager = new CalendarManager(this);
         this.settingsManager = new SettingsManager(this);
 
+        // 同步用户信息到设置（确保昵称正确显示）
+        this.syncUserInfoToSettings();
+
         this.bindEvents();
 
         this.initializeUI();
@@ -448,8 +451,10 @@ class HXKTerminalApp {
                 }
             }
 
+            const displayName = authUser?.name || authUser?.username || '用户';
+
             return {
-                name: authUser?.username || authUser?.name || '用户',
+                name: displayName,
                 avatar: avatar,
                 role: authUser?.role || 'member'
             };
@@ -464,6 +469,26 @@ class HXKTerminalApp {
             avatar: settings.avatar || 'Assets/Icons/user.svg',
             role: 'member'
         };
+    }
+
+    // 同步用户信息到设置
+    async syncUserInfoToSettings() {
+        if (
+            this.settingsManager &&
+            this.authManager &&
+            this.authManager.isUserAuthenticated()
+        ) {
+            try {
+                const userInfo =
+                    await window.electronAPI?.getStoreValue('user_info');
+                if (userInfo && userInfo.name) {
+                    this.settingsManager.settings.username = userInfo.name;
+                    await this.settingsManager.saveSettings();
+                }
+            } catch (error) {
+                console.warn('同步用户信息到设置失败:', error);
+            }
+        }
     }
 
     // 登出

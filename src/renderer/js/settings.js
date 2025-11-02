@@ -38,16 +38,22 @@ class SettingsManager {
                     this.settings = { ...this.settings, ...savedSettings };
                 }
 
-                // 同步用户信息中的头像（如果存在）
+                // 同步用户信息中的头像和昵称（如果存在）
                 try {
                     const userInfo =
                         await window.electronAPI.getStoreValue('user_info');
-                    if (userInfo && userInfo.avatar) {
+                    if (userInfo) {
                         // 如果用户信息中有头像，优先使用用户信息中的头像
-                        this.settings.avatar = userInfo.avatar;
+                        if (userInfo.avatar) {
+                            this.settings.avatar = userInfo.avatar;
+                        }
+                        // 如果用户信息中有name（昵称），优先使用用户信息中的name
+                        if (userInfo.name) {
+                            this.settings.username = userInfo.name;
+                        }
                     }
                 } catch (error) {
-                    console.warn('同步用户信息头像失败:', error);
+                    console.warn('同步用户信息失败:', error);
                 }
             }
         } catch (error) {
@@ -203,6 +209,28 @@ class SettingsManager {
         const container = document.querySelector('.settings-content');
         if (!container) return;
 
+        // 获取当前用户信息，优先使用用户信息中的name
+        let displayUsername = this.settings.username || '用户';
+        if (
+            this.app &&
+            this.app.authManager &&
+            this.app.authManager.isUserAuthenticated()
+        ) {
+            const authUser = this.app.authManager.getCurrentUser();
+            if (authUser && authUser.name) {
+                displayUsername = authUser.name;
+            } else if (authUser && authUser.username) {
+                displayUsername = authUser.username;
+            }
+        } else {
+            // 如果没有认证信息，尝试从存储中获取（同步方式，因为settings已经加载过）
+            // 这里使用已加载的settings.username，因为在loadSettings中已经同步过
+            // 如果settings.username还是默认值，尝试使用settings中的值
+            if (this.settings.username && this.settings.username !== '用户') {
+                displayUsername = this.settings.username;
+            }
+        }
+
         container.innerHTML = `
             <div class="settings-section">
                 <h3>用户设置</h3>
@@ -228,7 +256,7 @@ class SettingsManager {
                 <div class="setting-item">
                     <label>用户名</label>
                     <input type="text" id="username-input" 
-                           value="${this.escapeHtml(this.settings.username)}" 
+                           value="${this.escapeHtml(displayUsername)}" 
                            placeholder="请输入用户名">
                 </div>
                 <div class="setting-item">
@@ -346,9 +374,47 @@ class SettingsManager {
         // 用户名输入
         const usernameInput = document.getElementById('username-input');
         if (usernameInput) {
-            usernameInput.addEventListener('change', (event) => {
-                this.settings.username = event.target.value;
-                this.saveSettings();
+            usernameInput.addEventListener('change', async (event) => {
+                const newUsername = event.target.value.trim();
+                if (!newUsername) {
+                    this.app.showNotification('用户名不能为空', 'error');
+                    // 恢复为之前的用户名
+                    const authUser = this.app?.authManager?.getCurrentUser();
+                    usernameInput.value =
+                        authUser?.name || authUser?.username || '用户';
+                    return;
+                }
+
+                this.settings.username = newUsername;
+                await this.saveSettings();
+
+                // 同步更新后端用户信息中的name字段
+                try {
+                    await apiClient.updateUser({
+                        name: newUsername
+                    });
+
+                    // 更新后端返回的用户信息
+                    const updatedUserInfo = await apiClient.fetchUserInfo();
+                    if (updatedUserInfo) {
+                        await window.electronAPI?.setStoreValue(
+                            'user_info',
+                            updatedUserInfo
+                        );
+
+                        // 更新authManager中的用户信息
+                        if (this.app?.authManager?.currentUser) {
+                            this.app.authManager.currentUser.name = newUsername;
+                        }
+                    }
+                } catch (apiError) {
+                    console.error('更新用户名到数据库失败:', apiError);
+                    this.app.showNotification(
+                        '保存用户名到服务器失败，但已保存到本地',
+                        'warning'
+                    );
+                }
+
                 this.updateUserDisplay();
                 this.app.showNotification('用户名已更新', 'success');
             });
