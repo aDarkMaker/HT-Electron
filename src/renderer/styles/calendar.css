@@ -403,7 +403,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #f4f7fa;
     border-radius: 16px 16px 0 0;
 }
 
@@ -421,7 +421,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    background: #f4f7fa;
     border-radius: 16px 16px 0 0;
 }
 
@@ -505,7 +505,7 @@
 }
 
 .add-event-modal .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #6f76c6;
     color: white;
     border-radius: 16px 16px 0 0;
 }
@@ -1062,12 +1062,12 @@
 
 /* 添加事件模态框 */
 .theme-dark .add-event-modal {
-    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
     border: 1px solid #334155;
 }
 
 .theme-dark .add-event-modal .modal-content {
-    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
     border: 1px solid #334155;
 }
 
@@ -1086,7 +1086,7 @@
 }
 
 .theme-dark .header-icon {
-    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    background: #7050ef;
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
 
@@ -1141,7 +1141,7 @@
 }
 
 .theme-dark .event-modal-header {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    background: #263942;
     border-bottom: 1px solid #4a5568;
 }
 
@@ -1167,7 +1167,7 @@
 }
 
 .theme-dark .detail-icon-wrapper {
-    background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+    background: #7050ef;
     box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 

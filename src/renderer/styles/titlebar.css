@@ -12,7 +12,7 @@ body.darwin .custom-titlebar {
 
 /* 浅色主题 */
 body:not(.dark) .custom-titlebar {
-    background: linear-gradient(to bottom, #f6f6f6, #e8e8e8);
+    background: #efefef;
     border-bottom: 1px solid #d0d0d0;
 }
 
@@ -34,7 +34,7 @@ body:not(.dark) .titlebar-btn:active {
 
 /* 深色主题 */
 body.dark .custom-titlebar {
-    background: linear-gradient(to bottom, #2d2d2d, #1d1d1d);
+    background: #252525;
     border-bottom: 1px solid #404040;
 }
 

@@ -123,7 +123,7 @@ body.windows #app {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #6f76c6;
     color: white;
     border: none;
     border-radius: 8px;
@@ -158,7 +158,7 @@ body.windows #app {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #6f76c6;
     color: white;
 }
 
@@ -459,7 +459,7 @@ body.windows #app {
 
 /* 按钮 - 深色主题 */
 .theme-dark .primary-btn {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #9247f2;
     box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 
@@ -468,7 +468,7 @@ body.windows #app {
 }
 
 .theme-dark .btn-primary {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #9247f2;
 }
 
 .theme-dark .btn-secondary {
@@ -532,14 +532,14 @@ body.windows #app {
 }
 
 .theme-dark .modal-content {
-    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.8);
     border: 1px solid #334155;
 }
 
 .theme-dark .modal-header {
     border-bottom: 1px solid #334155;
-    background: linear-gradient(135deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
 }
 
 .theme-dark .modal-header h3 {
@@ -563,7 +563,7 @@ body.windows #app {
 
 .theme-dark .modal-footer {
     border-top: 1px solid #334155;
-    background: linear-gradient(135deg, #1a202c 0%, #1e293b 100%);
+    background: #1c2424;
 }
 
 /* 表单 - 深色主题 */

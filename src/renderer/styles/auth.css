@@ -5,7 +5,7 @@
     align-items: center;
     min-height: 100vh;
     width: 100vw;
-    background: linear-gradient(135deg, #a8bbe0 0%, #c2a8d8 100%);
+    background: #b5a2dc;
     position: fixed; /* 使用fixed确保不会与其他容器重叠 */
     top: 0;
     left: 0;
@@ -215,7 +215,7 @@
 .auth-button {
     width: 100%;
     padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #6f76c6;
     color: white;
     border: none;
     border-radius: 6px;
@@ -320,34 +320,34 @@
 }
 
 .auth-toast-success {
-    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    background: #40b171;
     color: white;
 }
 
 .auth-toast-error {
-    background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+    background: #ed5252;
     color: white;
 }
 
 /* 深色主题下的通知 */
 .theme-dark .auth-toast-success {
-    background: linear-gradient(135deg, #2f855a 0%, #22543d 100%);
+    background: #286c4b;
 }
 
 .theme-dark .auth-toast-error {
-    background: linear-gradient(135deg, #742a2a 0%, #63171b 100%);
+    background: #6b2023;
 }
 
 /* 深色主题 */
 .theme-dark .auth-box {
-    background: linear-gradient(145deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
     border: 1px solid #334155;
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.8);
 }
 
 .theme-dark .auth-header {
     border-bottom: 1px solid #334155;
-    background: linear-gradient(135deg, #1e293b 0%, #1a202c 100%);
+    background: #1c2424;
 }
 
 .theme-dark .auth-title {
@@ -366,7 +366,7 @@
 
 .theme-dark .auth-switch {
     border-top: 1px solid #334155;
-    background: linear-gradient(135deg, #1a202c 0%, #1e293b 100%);
+    background: #1c2424;
 }
 
 .theme-dark .form-group-auth label {
@@ -395,7 +395,7 @@
 }
 
 .theme-dark .auth-button {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    background: #9247f2;
     box-shadow: 0 2px 8px rgba(124, 58, 237, 0.4);
 }
 
